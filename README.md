@@ -1,5 +1,5 @@
 ### MksBot - Observing gamers in their natural habitat
-MksBot is my quick Python implementation of a Discord. Currently, he works on a single server to entertain the monkeys (a.k.a my friends and I) in various ways. 
+MksBot is my quick Python implementation of a Discord bot. Currently, he works on a single server to entertain my friends and I. I aim to implement more helpful features in the future. 
 #### Features
 MksBot has the following features:
 
