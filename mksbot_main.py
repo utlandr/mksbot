@@ -38,7 +38,7 @@ async def info(ctx):
     embed.add_field(inline = False, name = "Where humans can see my beautiful code", value = config['bot']['source_code'])
     await ctx.send(embed=embed)
 
-@bot.command()
+@bot.command(pass_context=True)
 async def user(ctx, member : discord.Member):
     await ctx.send(embed = user_info_embed(member))
 
