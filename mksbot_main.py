@@ -17,21 +17,21 @@ bot = commands.Bot(command_prefix='!')
 
 #   Successful connection to server
 @bot.event
-async def on_ready():
-    print('\n\nLogged in as\nUsername:  %s\nID  %xs\n\n' % (bot.user.name, bot.user.id))
+async def on_ready(pass_context=True):
+    print('\n\nLogged in as\nUsername:  %s\nID  %s\n\n' % (bot.user.name, bot.user.id))
 
 #   Commands
-@bot.command()
+@bot.command(pass_context=True)
 async def copypasta(ctx):
     title,content = hot_copypasta(5)
     pasta_response = discord.Embed(title = title, description = content, color = config["copypasta"]["response_colour"])
     await ctx.send(embed = pasta_response)
 
-@bot.command()
+@bot.command(pass_context=True)
 async def donger(ctx):
     await ctx.send(get_random_donger())
 
-@bot.command()
+@bot.command(pass_context=True)
 async def info(ctx):
     embed = discord.Embed(title=config['bot']['title'], description=config['bot']['description'], color=0xeee657)
     embed.add_field(inline = False, name="Where humans can complain", value = config['bot']['email'])
@@ -44,7 +44,7 @@ async def user(ctx, member : discord.Member):
 
 bot.remove_command('help')
 
-@bot.command()
+@bot.command(pass_context=True)
 async def help(ctx):
     embed = discord.Embed(title="MksBot", description="My commands are:", color=0xeee657)
 
