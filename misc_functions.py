@@ -22,3 +22,31 @@ def user_info_embed(member : discord.Member):
     embed.add_field(name = 'Current Status', value = status, inline = False)
 
     return embed
+
+def russian_roulette(ctx):
+    try:
+        channel = ctx.message.author.voice.channel
+    
+    except:
+        response = 'You need to be in a voice channel with at least 2 people to do this...'
+        return response
+    
+    members = channel.members
+    
+    if len(members) > 1:
+        r = random.randint(0,5)
+        not_shot = 1
+        while not_shot:
+            for member in members:
+                if random.randint(0,5) == r:
+                    not_shot = 0
+                    name = member.display_name
+                    response = "{}: BOOOOOOOOOOOOOOM, HEADSHOT!".format(name)
+                    break
+
+    else:
+        response = 'You need to be in a voice channel with at least 2 people to do this...'
+        return response
+
+    return response
+
