@@ -1,2 +1,5 @@
 *.txt
 *.yml
+*.log
+.vscode
+__pycache__
