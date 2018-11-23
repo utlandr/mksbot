@@ -21,7 +21,8 @@ client = discord.Client()
 
 #   Import cogs/extensions
 cogs = ['cogs.reddit',
-        'cogs.amusement'
+        'cogs.amusement',
+        'cogs.voice'
         ]
         
 if __name__ == '__main__':
@@ -50,7 +51,12 @@ async def help(ctx):
     embed.add_field(name="!copypasta", value=config['copypasta']['description'], inline=False)
     embed.add_field(name="!donger", value=get_random_donger(), inline=False)
     embed.add_field(name="!roulette <no. to kill> <no. of chambers>", value=config['roulette']['description'], inline = False)
-    embed.add_field(name="!user @<username>", value=config['user']['description'], inline=False)
+    embed.add_field(name="!volume <1-10>", value=config['volume']['description'], inline=False)
+    embed.add_field(name="!play <filename>", value=config['play']['description'], inline=False)
+    embed.add_field(name="!stream <url or search term>", value=config['stream']['description'], inline=False)
+    embed.add_field(name="!yt <url or search term>", value=config['youtube']['description'], inline=False)
+    embed.add_field(name="!stop", value=config['stop']['description'], inline=False)
+    embed.add_field(name="!summon <voice channel>", value=config['summon']['description'], inline=False)
     await ctx.send(embed=embed)
 
 @bot.command(pass_context=True)
