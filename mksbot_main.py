@@ -81,8 +81,14 @@ logger = logging.getLogger('discord')
 if config['bot']['log_level'] == 'debug':
     logger.setLevel(logging.DEBUG)
 
-else:
+elif config['bot']['log_level'] == 'info':
+    logger.setLevel(logging.INFO)
+
+elif config['bot']['log_level'] == 'warning':
     logger.setLevel(logging.WARNING)
+
+else:
+    logger.setLevel(logging.ERROR)
 
 handler = logging.FileHandler(filename='{}/mksbot.log'.format(config['bot']['log_path']), encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
