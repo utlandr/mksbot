@@ -31,7 +31,7 @@ if __name__ == '__main__':
             bot.load_extension(extension)
 
         except Exception as e:
-            print(f'Failed to load extension {extension}.', file=sys.stderr)
+            print('Failed to load extension {}.'.format(extension), file=sys.stderr)
             traceback.print_exc()
 
 #   Successful connection to server
