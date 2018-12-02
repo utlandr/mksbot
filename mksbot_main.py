@@ -90,6 +90,7 @@ elif config['bot']['log_level'] == 'warning':
 else:
     logger.setLevel(logging.ERROR)
 
+#   Logger formatting
 handler = logging.FileHandler(filename='{}/mksbot.log'.format(config['bot']['log_path']), encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
