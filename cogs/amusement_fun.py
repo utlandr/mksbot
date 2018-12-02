@@ -3,6 +3,7 @@ import random
 import codecs
 import discord
 
+
 def get_random_donger():
     lines = codecs.open('dongers.txt', encoding='utf-8').read().splitlines()
     myline =random.choice(lines)
