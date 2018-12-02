@@ -55,8 +55,10 @@ async def help(ctx):
     embed.add_field(name="!play <filename>", value=config['play']['description'], inline=False)
     embed.add_field(name="!stream <url or search term>", value=config['stream']['description'], inline=False)
     embed.add_field(name="!yt <url or search term>", value=config['youtube']['description'], inline=False)
-    embed.add_field(name="!stop", value=config['stop']['description'], inline=False)
+    embed.add_field(name="!leave", value=config['leave']['description'], inline=False)
     embed.add_field(name="!summon <voice channel>", value=config['summon']['description'], inline=False)
+    embed.add_field(name='!pause', value=config['pause']['description'], inline = False)
+    embed.add_field(name='!resume', value=config['resume']['description'], inline = False)
     await ctx.send(embed=embed)
 
 @bot.command(pass_context=True)
