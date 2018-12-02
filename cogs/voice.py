@@ -119,7 +119,7 @@ class Music:
     async def leave(self, ctx):
         """Stops and disconnects the bot from voice"""
 
-        ctx.voice_client.stop()
+        await ctx.voice_client.disconnect()
     
     #   Pause current audio stream
     @commands.command()
@@ -132,8 +132,7 @@ class Music:
     @commands.command()
     async def resume(self, ctx):
         """Resumes current playback if paused"""
-        if ctx.voice_client.is_paused():
-            ctx.voice_client.resume()
+        ctx.voice_client.resume()
 
     #   Checks made on selection command before invocation
     @play.before_invoke
@@ -148,6 +147,19 @@ class Music:
                 raise commands.CommandError("Author not connected to a voice channel.")
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
+
+    #   Checks playback commands for proper invocation 
+    @pause.before_invoke
+    @resume.before_invoke
+    @leave.before_invoke
+    async def ensure_user_presence(self, ctx):
+        if ctx.voice_client is None:
+            if ctx.author.voice:
+                await ctx.author.voice.channel.connect()
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+                raise commands.CommandError("Author not connected to a voice channel.")
+
 
 def setup(bot):
     bot.add_cog(Music(bot))
