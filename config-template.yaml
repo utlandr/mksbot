@@ -1,0 +1,49 @@
+bot:
+  title: <Bot Name>
+  description: <Bot Description (shows on discord)>
+  token: <Discord Bot Token>
+  email: <Contact Email>
+  source_code: https://github.com/utlandr/mksbot
+  log_level:  <debug|warning|info>
+  log_path: <Where to save log file>
+    
+copypasta:
+  id: <Reddit app ID>
+  secret: <Reddit app secret>
+  user_agent: <Reddit app user agent>
+  username: <username>
+  pw: <password>
+  response_colour: <hex value>
+  description: <Function Description>
+
+donger:
+  description: <Function Description>
+
+roulette:
+  description: <Function Description>
+
+user:
+  description: <Function Description>
+
+play:
+  description: <Function Description>
+  
+leave:
+  description: <Function Description>
+
+pause:
+  description: <Function Description>
+
+resume:
+  description: <Function Description>
+  
+stream:
+  description: <Function Description>
+  
+youtube:
+  description: <Function Description>
+  
+volume:
+  description: <Function Description>
+summon:
+  description: <Function Description>
