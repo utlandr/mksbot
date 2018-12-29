@@ -23,7 +23,7 @@ ytdl_format_options = {
     'quiet': True,
     'no_warnings': True,
     'default_search': 'auto',
-    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0' # ipv4 address only
 }
 
 ffmpeg_options = {
@@ -35,7 +35,7 @@ ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
+    def __init__(self, source, *, data, volume=0.1):
         super().__init__(source, volume)
 
         self.data = data
@@ -60,15 +60,23 @@ class Music:
     def __init__(self, bot):
         self.bot = bot
 
-    #   Summon to supplied voice channel
+    #   Summon to voice channel
     @commands.command()
-    async def summon(self, ctx, *, channel: discord.VoiceChannel):
+    async def summon(self, ctx, *arg): #, channel: discord.VoiceChannel):
         """Joins a voice channel"""
+        #   If channel is supplied
+        if len(arg) != 0:
+            channel = discord.utils.get(ctx.guild.voice_channels, name=arg[0])
 
-        if ctx.voice_client is not None:
-            return await ctx.voice_client.move_to(channel)
+            if channel is not None:
+                if ctx.voice_client is not None:
+                    return await ctx.voice_client.move_to(channel)
 
-        await channel.connect()
+                await channel.connect()
+
+        #   No Channel supplied
+        else: 
+            await ctx.author.voice.channel.connect()
 
     #   Play audio locally stored
     @commands.command()
@@ -81,6 +89,7 @@ class Music:
 
         await ctx.send('Now playing: {}'.format(query))
 
+    #   Remote audio (downloaded then streamed locally. Good for poor connections)
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def yt(self, ctx, *, url):
@@ -107,12 +116,12 @@ class Music:
     @commands.command()
     async def volume(self, ctx, volume: int):
         """Changes the player's volume"""
+        if volume in range(1,101):
+            if ctx.voice_client is None:
+                return await ctx.send("Not connected to a voice channel.")
 
-        if ctx.voice_client is None:
-            return await ctx.send("Not connected to a voice channel.")
-
-        ctx.voice_client.source.volume = volume/100
-        await ctx.send("Changed volume to {}%".format(volume))
+            ctx.voice_client.source.volume = volume/100
+            await ctx.send("Changed volume to {}%".format(volume))
 
     #   Leave the discord channel (also stops audio)
     @commands.command()
