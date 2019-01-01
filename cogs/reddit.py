@@ -3,7 +3,7 @@ import yaml
 from discord.ext import commands
 from cogs.reddit_fun import hot_copypasta
 
-'''Reddit cog for all things Reddit'''
+#   Reddit cog for all things Reddit
 class Reddit:
     def __init__(self, bot):
         self.bot = bot
@@ -12,9 +12,11 @@ class Reddit:
     #   copypasta scrapes hot ocmments from r/copypasta subreddit using PRAW
     @commands.command(pass_context=True)
     async def copypasta(self, ctx):
+        """Scrape and send a formatted post from the r/copypasta subreddit"""
         title,content = hot_copypasta(5)
         pasta_response = discord.Embed(title = title, description = content, color = self.config["copypasta"]["response_colour"])
         await ctx.send(embed = pasta_response)
 
+#   This function is used by discord.py to integrate the cog+subroutines into the bot
 def setup(bot):
     bot.add_cog(Reddit(bot))
