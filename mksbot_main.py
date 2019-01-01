@@ -1,20 +1,20 @@
 import asyncio
 import discord
-from discord.ext import commands
 import logging
 import random
-import sys, traceback
+import sys
+import traceback
 import yaml
 
-from base_functions import *
+from discord.ext import commands
 from cogs.amusement_fun import get_random_donger
+from base_functions import *
 
 if not discord.opus.is_loaded():
     discord.opus.load_opus('opus')
 
 #   Import config data
 config = yaml.safe_load(open("./config.yml"))
-
 
 bot = commands.Bot(command_prefix='!', description = config['bot']['description'])
 client = discord.Client()
@@ -45,6 +45,7 @@ bot.remove_command('help')
 #   Basic commands (usually single response)
 @bot.command(pass_context=True)
 async def help(ctx):
+    """Display command information and invocation syntax"""
     embed = discord.Embed(title="MksBot", description="My commands are:", color=0xeee657)
     embed.add_field(name="!info", value="Bot info", inline=False)
     embed.add_field(name="!help", value="Gives this message", inline=False)
@@ -63,6 +64,7 @@ async def help(ctx):
 
 @bot.command(pass_context=True)
 async def info(ctx):
+    """Display basic information/help/details on the bot"""
     embed = discord.Embed(title=config['bot']['title'], description=config['bot']['description'], color=0xeee657)
     embed.add_field(inline = False, name="Where humans can complain", value = config['bot']['email'])
     embed.add_field(inline = False, name = "Where humans can see my beautiful code", value = config['bot']['source_code'])
@@ -70,6 +72,7 @@ async def info(ctx):
 
 @bot.command(pass_context=True)
 async def user(ctx, *, member : discord.Member):
+    """Get user information"""
     await ctx.send(embed = user_info_embed(member))
 
 @user.error
