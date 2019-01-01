@@ -33,13 +33,11 @@ ffmpeg_options = {
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
-
+#   Youtube download source class (with FFmpeg audio conversion)
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.1):
         super().__init__(source, volume)
-
         self.data = data
-
         self.title = data.get('title')
         self.url = data.get('url')
 
@@ -55,16 +53,16 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-"""Music cog to add to mksbot_main"""
 class Music:
     def __init__(self, bot):
         self.bot = bot
 
     #   Summon to voice channel
     @commands.command()
-    async def summon(self, ctx, *arg): #, channel: discord.VoiceChannel):
+    async def summon(self, ctx, *arg):
         """Joins a voice channel"""
-        #   If channel is supplied
+        
+        #   Connect to a supplied voice channel
         if len(arg) != 0:
             channel = discord.utils.get(ctx.guild.voice_channels, name=arg[0])
 
@@ -74,7 +72,7 @@ class Music:
 
                 await channel.connect()
 
-        #   No Channel supplied
+        #   No input implies connect to users current voice channel
         else: 
             await ctx.author.voice.channel.connect()
 
@@ -89,7 +87,7 @@ class Music:
 
         await ctx.send('Now playing: {}'.format(query))
 
-    #   Remote audio (downloaded then streamed locally. Good for poor connections)
+    #   Download first from YT and play
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def yt(self, ctx, *, url):
@@ -101,7 +99,7 @@ class Music:
 
         await ctx.send('Now playing: {}'.format(player.title))
 
-    #   Stream a Youtube video's audio
+    #   Stream (no local storage) Youtube audio
     @commands.command()
     async def stream(self, ctx, *, url):
         """Streams from a url (same as yt, but doesn't predownload)"""
@@ -116,6 +114,7 @@ class Music:
     @commands.command()
     async def volume(self, ctx, volume: int):
         """Changes the player's volume"""
+        
         if volume in range(1,101):
             if ctx.voice_client is None:
                 return await ctx.send("Not connected to a voice channel.")
@@ -134,6 +133,7 @@ class Music:
     @commands.command()
     async def pause(self,ctx):
         """Pauses current playback"""
+
         if ctx.voice_client.is_playing():
             ctx.voice_client.pause()
     
@@ -141,6 +141,7 @@ class Music:
     @commands.command()
     async def resume(self, ctx):
         """Resumes current playback if paused"""
+        
         ctx.voice_client.resume()
 
     #   Checks made on selection command before invocation
@@ -169,6 +170,6 @@ class Music:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
 
-
+#   discord.py requires this function to integrate the class (and subsequent methods) 
 def setup(bot):
     bot.add_cog(Music(bot))
