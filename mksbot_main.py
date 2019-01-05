@@ -49,7 +49,7 @@ async def help(ctx):
     embed = discord.Embed(title="MksBot", description="My commands are:", color=0xeee657)
     embed.add_field(name="!info", value="Bot info", inline=False)
     embed.add_field(name="!help", value="Gives this message", inline=False)
-    embed.add_field(name="!copypasta", value=config['copypasta']['description'], inline=False)
+    embed.add_field(name="!reddit (Empty) <subreddit>", value=config['reddit']['description'], inline=False)
     embed.add_field(name="!donger", value=get_random_donger(), inline=False)
     embed.add_field(name="!roulette <no. to kill> <no. of chambers>", value=config['roulette']['description'], inline = False)
     embed.add_field(name="!volume <1-100>", value=config['volume']['description'], inline=False)

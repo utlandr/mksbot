@@ -7,7 +7,7 @@ bot:
   log_level:  <debug|warning|info>
   log_path: <Where to save log file>
     
-copypasta:
+reddit:
   id: <Reddit app ID>
   secret: <Reddit app secret>
   user_agent: <Reddit app user agent>
