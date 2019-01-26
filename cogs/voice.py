@@ -26,6 +26,7 @@ ytdl_format_options = {'format': 'bestaudio/best',
 
 ffmpeg_options = {'options': '-vn',
                   'executable': 'ffmpeg',
+                  'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
                   }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
@@ -62,6 +63,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 class Music:
     def __init__(self, bot):
         self.bot = bot
+        self.def_volume = 0.1
 
     #   Summon to voice channel
     @commands.command()
@@ -137,20 +139,28 @@ class Music:
 
     #   Alter volume of audio
     @commands.command()
-    async def volume(self, ctx, volume: int):
+    async def volume(self, ctx, *volume: int):
         """Changes the player's volume
 
         :param ctx: command invocation message context
         :param volume: volume to set the player to
         :return: message reply on successful volume update
         """
-        
-        if volume in range(1, 101):
-            if ctx.voice_client is None:
-                return await ctx.send("Not connected to a voice channel.")
+        try:
+            bot_volume = ctx.voice_client.source.volume
 
-            ctx.voice_client.source.volume = volume/100
-            await ctx.send("Changed volume to {}%".format(volume))
+        except AttributeError:
+            return await ctx.send("Audio not initialized\nDefault audio volume is {}%".format(self.def_volume * 100))
+
+        if volume:
+            if volume[0] in range(1, 101) and volume[0] != int(bot_volume * 100):
+                if ctx.voice_client is None:
+                    return await ctx.send("You are not connected to a voice channel.")
+
+                ctx.voice_client.source.volume = volume[0]/100
+                return await ctx.send("Changed volume to {}%".format(int(volume[0])))
+
+        return await ctx.send("Current volume is {}%".format(int(bot_volume * 100)))
 
     #   Leave the discord channel (also stops audio)
     @commands.command()
@@ -215,6 +225,7 @@ class Music:
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
+
 
 #   discord.py requires this function to integrate the class (and subsequent methods) 
 def setup(bot):
