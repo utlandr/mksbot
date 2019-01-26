@@ -5,33 +5,31 @@ import asyncio
 
 import discord
 import youtube_dl
-
 from discord.ext import commands
 
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
 
 #   YT stream options
-ytdl_format_options = {
-    'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0' # ipv4 address only
-}
+ytdl_format_options = {'format': 'bestaudio/best',
+                       'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+                       'restrictfilenames': True,
+                       'noplaylist': True,
+                       'nocheckcertificate': True,
+                       'ignoreerrors': False,
+                       'logtostderr': False,
+                       'quiet': True,
+                       'no_warnings': True,
+                       'default_search': 'auto',
+                       'source_address': '0.0.0.0',  # ipv4 address only
+                       }
 
-ffmpeg_options = {
-    'options': '-vn',
-    'executable': 'ffmpeg'
-}
+ffmpeg_options = {'options': '-vn',
+                  'executable': 'ffmpeg',
+                  }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
 
 #   Youtube download source class (with FFmpeg audio conversion)
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -43,6 +41,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=False):
+        """Stream audio from a supplied url instead of searching
+
+        :param url: supplied URL
+        :param loop: video looping
+        :param stream: determine if URL is a stream
+        :return:
+        """
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
@@ -53,6 +58,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
+
 class Music:
     def __init__(self, bot):
         self.bot = bot
@@ -60,8 +66,12 @@ class Music:
     #   Summon to voice channel
     @commands.command()
     async def summon(self, ctx, *arg):
-        """Joins a voice channel"""
-        
+        """Joins a voice channel
+
+        :param ctx: command invocation message context
+        :param arg: list containing command context
+        :return: None
+        """
         #   Connect to a supplied voice channel
         if len(arg) != 0:
             channel = discord.utils.get(ctx.guild.voice_channels, name=arg[0])
@@ -80,7 +90,12 @@ class Music:
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def play(self, ctx, *, query):
-        """Plays a file from the local filesystem"""
+        """Plays a file from the local filesystem
+
+        :param ctx: command invocation message context
+        :param query: YouTube search query
+        :return: None
+        """
 
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
         ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
@@ -91,7 +106,12 @@ class Music:
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def yt(self, ctx, *, url):
-        """Plays from a url (almost anything youtube_dl supports)"""
+        """Plays from a url (almost anything youtube_dl supports)
+
+        :param ctx: command invocation message context
+        :param url: YouTube video url
+        :return: None
+        """
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop)
@@ -102,7 +122,12 @@ class Music:
     #   Stream (no local storage) Youtube audio
     @commands.command()
     async def stream(self, ctx, *, url):
-        """Streams from a url (same as yt, but doesn't predownload)"""
+        """Streams from a url (same as yt, but doesn't predownload)
+
+        :param ctx: command invocation message context
+        :param url: YouTube video URL
+        :return:
+        """
 
         async with ctx.typing():
             player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
@@ -113,9 +138,14 @@ class Music:
     #   Alter volume of audio
     @commands.command()
     async def volume(self, ctx, volume: int):
-        """Changes the player's volume"""
+        """Changes the player's volume
+
+        :param ctx: command invocation message context
+        :param volume: volume to set the player to
+        :return: message reply on successful volume update
+        """
         
-        if volume in range(1,101):
+        if volume in range(1, 101):
             if ctx.voice_client is None:
                 return await ctx.send("Not connected to a voice channel.")
 
@@ -125,14 +155,22 @@ class Music:
     #   Leave the discord channel (also stops audio)
     @commands.command()
     async def leave(self, ctx):
-        """Stops and disconnects the bot from voice"""
+        """Stops and disconnects the bot from voice
+
+        :param ctx: command invocation message context
+        :return: None
+        """
 
         await ctx.voice_client.disconnect()
     
     #   Pause current audio stream
     @commands.command()
-    async def pause(self,ctx):
-        """Pauses current playback"""
+    async def pause(self, ctx):
+        """Pauses current playback
+
+        :param ctx: command invocation message context
+        :return: None
+        """
 
         if ctx.voice_client.is_playing():
             ctx.voice_client.pause()
@@ -140,15 +178,23 @@ class Music:
     #   Resume current audio stream
     @commands.command()
     async def resume(self, ctx):
-        """Resumes current playback if paused"""
+        """Resumes current playback if paused
+
+        :param ctx: command invocation message context
+        :return: None
+        """
         
         ctx.voice_client.resume()
 
-    #   Checks made on selection command before invocation
     @play.before_invoke
     @yt.before_invoke
     @stream.before_invoke
     async def ensure_voice(self, ctx):
+        """Checks made on selection command before invocation
+
+        :param ctx: command invocation message context
+        :return:
+        """
         if ctx.voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
