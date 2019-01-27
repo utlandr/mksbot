@@ -96,7 +96,7 @@ class Amusement:
             await ctx.send(response)
     
     #   This routine performs checks every time a user's voice state changes (such as switching voice channels)
-    async def on_voice_state_update(self, before):
+    async def on_voice_state_update(self, member, before, after):
         b_channel = before.channel
         
         #   Remove temporary voice channel "R.I.P."
