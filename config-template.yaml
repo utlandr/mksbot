@@ -50,5 +50,5 @@ summon:
   description: <Function Description>
 
 streamable:
-  user: <streamable username>
-  pw: <streamable password>
+  user: <Streamable username>
+  pw: <Streamable password>
