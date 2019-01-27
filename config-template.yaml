@@ -45,5 +45,10 @@ youtube:
   
 volume:
   description: <Function Description>
+
 summon:
   description: <Function Description>
+
+streamable:
+  user: <streamable username>
+  pw: <streamable password>
