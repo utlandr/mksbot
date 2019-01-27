@@ -1,10 +1,20 @@
-import praw
-import random
 import yaml
-from discord import Embed
 
-def reddit_post(sub, sort_by, n_posts = 100):
-    """Scrapes reddit for hot posts"""
+from discord import Embed
+import praw
+
+from cogs.streamable import upload_streamable
+from cogs.streamable import streamable_instance
+
+
+def reddit_post(sub, sort_by, n_posts=100):
+    """Scrapes reddit for hot posts
+
+    :param sub: subreddit name to scrape posts
+    :param sort_by: reddit posts ordering
+    :param n_posts: number of posts to retrieve
+    :return: a selected praw.Submission object
+    """
     reddit = reddit_instance()
     subreddit = reddit.subreddit(sub)
 
@@ -13,8 +23,8 @@ def reddit_post(sub, sort_by, n_posts = 100):
             subreddit.id
         
         except Exception as e:
-            print("Error: %s"%e)
-            return("r/%s not found"%sub, None)
+            print("Error: {}".format(e))
+            return "r/{} not found".format(sub), None
 
     #   Grab a list of non-hidden (unread) posts
     post_list = subreddit.hot(limit=n_posts)
@@ -23,28 +33,74 @@ def reddit_post(sub, sort_by, n_posts = 100):
     for submission in post_list:
         if (len(submission.selftext)) < 2048 and len(submission.title) < 256 and not submission.stickied:
             submission.hide()
-            return(submission)
+            return submission
 
         else:
             submission.hide()
 
+
 def reddit_embed(submission):
-    """Converts a raw submission into a pretty discord embedded message"""
+    """Converts a raw submission into a pretty discord embedded message
 
-    embedded = Embed(title = submission.title, description = submission.selftext, url=submission.shortlink).set_footer(text="Submitted by:\tu/%s"%submission.author)
+    :param submission: praw.Submission object
+    :return embedded: discord.Embed object containing reddit post information
+    :return tack_on: a string containing a URL to tack below (comment after) the embedding
+    """
 
-    return(embedded)
+    #   Every post will contain base details/submission text
+    embedded = Embed(title=submission.title,
+                     description=submission.selftext,
+                     url=submission.shortlink).set_footer(text="Submitted by:\tu/{}".format(submission.author))
+
+    tack_on = ""
+
+    #   image/gif format
+    if hasattr(submission, "post_hint"):
+        print(submission.post_hint, submission.url)
+        if submission.post_hint == "image":
+            embedded.set_image(url=submission.url)
+
+        elif submission.post_hint == "hosted:video" or submission.post_hint == "rich:video":
+            embedded.description = submission.url
+            if "v.redd.it" in submission.url:
+                user, pw = streamable_instance()
+                tack_on = "https://streamable.com/{}".format(upload_streamable(submission.url, user, pw))
+
+            else:
+                tack_on = submission.url
+
+        elif submission.post_hint == "link":
+            if submission.url.endswith(".gif") or submission.url.endswith(".gifv"):
+                if "v.redd.it" in submission.url:
+                    user, pw = streamable_instance()
+                    tack_on = "https://streamable.com/{}".format(upload_streamable(submission.url, user, pw))
+                else:
+                    tack_on = submission.url
+
+            else:
+                embedded.set_image(url=submission.preview["images"][0]["resolutions"][-2]["url"])
+
+    else:
+        if submission.url.startswith("https://www.reddit.com/r"):
+            embedded.description = submission.selftext
+
+    return embedded, tack_on
+
 
 def reddit_instance():
-    """Setup the reddit connection (to bot account)"""
+    """Setup the reddit connection (to bot account)
+
+    :return: praw.Reddit instance
+    """
     config = yaml.safe_load(open("config.yml"))
-    reddit = praw.Reddit(   client_id = config["reddit"]["id"],
-                            client_secret = config["reddit"]["secret"],
-                            user_agent = config["reddit"]["user_agent"],
-                            username = config["reddit"]["username"],
-                            password = config["reddit"]["pw"]
-                        )
+    reddit = praw.Reddit(client_id=config["reddit"]["id"],
+                         client_secret=config["reddit"]["secret"],
+                         user_agent=config["reddit"]["user_agent"],
+                         username=config["reddit"]["username"],
+                         password=config["reddit"]["pw"])
+    
     return reddit
+
 
 def clear_hidden(n=None):
     """An external function to clear all read/hidden posts on the bot account"""

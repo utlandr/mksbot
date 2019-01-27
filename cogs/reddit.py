@@ -1,7 +1,11 @@
-import discord
+import asyncio
 import yaml
+
+import discord
 from discord.ext import commands
-from cogs.reddit_fun import *
+from cogs.reddit_fun import reddit_embed
+from cogs.reddit_fun import reddit_post
+
 
 #   Reddit cog for all things Reddit
 class Reddit:
@@ -12,14 +16,24 @@ class Reddit:
     #   copypasta scrapes hot comments from r/copypasta subreddit using PRAW
     @commands.command(pass_context=True)
     async def reddit(self, ctx, subreddit="all", sort_by="hot"):
-        """Scrape and send a formatted post from any subreddit"""
+        """Scrape and send a formatted post from any subreddit
+
+        :param ctx: command invocation message context
+        :param subreddit: a subreddit to scrape posts from
+        :param sort_by: ordering of post list to retrieve
+        :return: None
+        """
         
         async with ctx.typing():
-            submission = reddit_post(subreddit,sort_by)
-            reddit_response = reddit_embed(submission)#discord.Embed(title = submission.title, description = submission.selftext, color = self.config["copypasta"]["response_colour"])
-            reddit_response.colour=self.config["reddit"]["response_colour"]
-            #reddit_response.set_author(name= "Submitted By:\t%s"%submission.author, url = submission.shortlink)
-        await ctx.send(embed = reddit_response)
+            submission = reddit_post(subreddit, sort_by)
+            reddit_response, tack_on = reddit_embed(submission)
+            reddit_response.colour = self.config["reddit"]["response_colour"]
+
+        await ctx.send(embed=reddit_response)
+        if tack_on.startswith("https://streamable"):
+            await asyncio.sleep(5)
+        await ctx.send(tack_on)
+
 
 #   This function is used by discord.py to integrate the cog+subroutines into the bot
 def setup(bot):
