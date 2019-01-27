@@ -1,6 +1,12 @@
+#   Ignore file formats
 *.txt
 *.yml
 *.log
+*.exe
+
+#   Ignore directories
 .vscode
 __pycache__
-*.exe
+.idea
+
+#   Ignore files
