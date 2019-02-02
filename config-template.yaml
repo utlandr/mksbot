@@ -16,6 +16,10 @@ reddit:
   response_colour: <hex value>
   description: <Function Description>
 
+streamable:
+  user: <Streamable username>
+  pw: <Streamable password>
+
 donger:
   description: <Function Description>
 
@@ -48,7 +52,3 @@ volume:
 
 summon:
   description: <Function Description>
-
-streamable:
-  user: <Streamable username>
-  pw: <Streamable password>
