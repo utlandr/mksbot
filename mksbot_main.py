@@ -6,7 +6,7 @@ import yaml
 from discord.ext import commands
 
 from base_functions import *
-from cogs.amusement_fun import get_random_donger
+from cogs.amusement.amusement_fun import get_random_donger
 
 if not discord.opus.is_loaded():
     discord.opus.load_opus('opus')
@@ -17,9 +17,9 @@ config = yaml.safe_load(open("./config.yml"))
 bot = commands.Bot(command_prefix='!', description=config['bot']['description'])
 client = discord.Client()
 
-cogs = ['cogs.reddit',
-        'cogs.amusement',
-        'cogs.voice']
+cogs = ['cogs.reddit.reddit',
+        'cogs.amusement.amusement',
+        'cogs.voice.voice']
         
 if __name__ == '__main__':
     for extension in cogs:

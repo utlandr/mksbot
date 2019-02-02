@@ -4,8 +4,8 @@ import yaml
 
 import discord
 from discord.ext import commands
-from cogs.amusement_fun import get_random_donger
-from cogs.amusement_fun import russian_roulette
+from cogs.amusement.amusement_fun import get_random_donger
+from cogs.amusement.amusement_fun import russian_roulette
 
 
 #   Amusement class cog addon to mksbot main. Primarily contains random/non-admin type commands
