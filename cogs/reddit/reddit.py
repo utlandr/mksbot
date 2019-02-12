@@ -1,10 +1,9 @@
 import asyncio
 import yaml
 
-import discord
 from discord.ext import commands
-from cogs.reddit_fun import reddit_embed
-from cogs.reddit_fun import reddit_post
+from cogs.reddit.reddit_fun import reddit_embed
+from cogs.reddit.reddit_fun import reddit_post
 
 
 #   Reddit cog for all things Reddit

@@ -7,6 +7,8 @@ import discord
 import youtube_dl
 from discord.ext import commands
 
+from cogs.voice.voice_fun import bot_audible_update
+
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -74,19 +76,23 @@ class Music:
         :param arg: list containing command context
         :return: None
         """
+
         #   Connect to a supplied voice channel
         if len(arg) != 0:
             channel = discord.utils.get(ctx.guild.voice_channels, name=arg[0])
 
             if channel is not None:
                 if ctx.voice_client is not None:
-                    return await ctx.voice_client.move_to(channel)
+                    await ctx.voice_client.move_to(channel)
+                    await bot_audible_update(ctx, "Entering")
+                    return
 
                 await channel.connect()
 
         #   No input implies connect to users current voice channel
-        else: 
+        else:
             await ctx.author.voice.channel.connect()
+            await bot_audible_update(ctx, "Entering")
 
     #   Play audio locally stored
     @commands.command()
@@ -171,6 +177,7 @@ class Music:
         :return: None
         """
 
+        await bot_audible_update(ctx, "Leaving")
         await ctx.voice_client.disconnect()
     
     #   Pause current audio stream
@@ -208,6 +215,7 @@ class Music:
         if ctx.voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
+                await bot_audible_update(ctx, "Entering")
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")

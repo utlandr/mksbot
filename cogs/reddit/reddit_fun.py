@@ -3,8 +3,8 @@ import yaml
 from discord import Embed
 import praw
 
-from cogs.streamable import upload_streamable
-from cogs.streamable import streamable_instance
+from cogs.voice.streamable import upload_streamable
+from cogs.voice.streamable import streamable_instance
 
 
 def reddit_post(sub, sort_by, n_posts=100):
