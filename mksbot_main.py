@@ -78,65 +78,55 @@ async def user_error(error):
 
 #   Basic commands (usually single response)
 @bot.command(pass_context=True)
-async def help(ctx):
+async def help(ctx, *args):
     """Display command information and invocation syntax
     """
-    embed = discord.Embed(title="MksBot",
-                          description="My commands are:",
-                          color=0xeee657)
+    if not args:
+        embed = discord.Embed(title=" ",
+                              description=" ",
+                              color=0xeee657)
 
-    embed.add_field(name="!info",
-                    value="Bot info",
-                    inline=False)
+        embed.set_author(name="MksBot Help",
+                         url="https://github.com/utlandr/mksbot",
+                         icon_url="http://www.clipartbest.com/cliparts/aie/65d/aie65d4bT.png")
 
-    embed.add_field(name="!help",
-                    value="Gives this message",
-                    inline=False)
-    embed.add_field(name="!reddit (Empty) <subreddit>",
-                    value=config['reddit']['description'],
-                    inline=False)
+        for category in config["help"]:
 
-    embed.add_field(name="!donger",
-                    value=get_random_donger(),
-                    inline=False)
+            embed.add_field(name="\u200b", value=category, inline=False)
 
-    embed.add_field(name="!roulette <no. to kill> <no. of chambers>",
-                    value=config['roulette']['description'],
-                    inline=False)
+            for command_name in config["help"][category]:
+                comm = config["help"][category][command_name]
+                embed.add_field(name=comm["invocation"], value="\u200b", inline=True)
 
-    embed.add_field(name="!volume <1-100>",
-                    value=config['volume']['description'],
-                    inline=False)
+        embed.add_field(name="\u200b", value="\u200b", inline=False)
+        embed.add_field(name="Use !help <command> for more information on a specific command", value="\u200b", inline=False)
+        await ctx.send(embed=embed)
 
-    embed.add_field(name="!play <filename>",
-                    value=config['play']['description'],
-                    inline=False)
+    else:
+        c_group = []
+        just_c = []
+        command = args[0].replace("!", "")
+        [[c_group.append(group) for c in config["help"][group]] for group in config["help"]]
+        [[just_c.append(c) for c in config["help"][group]] for group in config["help"]]
+        if command in just_c:
+            ind = just_c.index(command)
+            details = config["help"][c_group[ind]][command]
+            embed = discord.Embed(title=" ",
+                                  description=" ",
+                                  color=0xeee657)
 
-    embed.add_field(name="!stream <url or search term>",
-                    value=config['stream']['description'],
-                    inline=False)
+            embed.set_author(name="MksBot Help: !" + command,
+                             url="https://github.com/utlandr/mksbot",
+                             icon_url="http://www.clipartbest.com/cliparts/aie/65d/aie65d4bT.png")
 
-    embed.add_field(name="!yt <url or search term>",
-                    value=config['youtube']['description'],
-                    inline=False)
+            embed.add_field(name="Description", value=details["description"], inline=False)
+            embed.add_field(name="\u200b", value="\u200b", inline=False)
+            embed.add_field(name="Invocation", value=details["example"], inline=False)
+            embed.add_field(name="\u200b", value="\u200b", inline=False)
+            embed.add_field(name="Options", value=details["options"], inline=False)
 
-    embed.add_field(name="!leave",
-                    value=config['leave']['description'],
-                    inline=False)
+            await ctx.send(embed=embed)
 
-    embed.add_field(name="!summon (Empty) | <voice channel>",
-                    value=config['summon']['description'],
-                    inline=False)
-
-    embed.add_field(name='!pause',
-                    value=config['pause']['description'],
-                    inline=False)
-
-    embed.add_field(name='!resume',
-                    value=config['resume']['description'],
-                    inline=False)
-
-    await ctx.send(embed=embed)
 
 #   Logging options and formatting
 logger = logging.getLogger('discord')
