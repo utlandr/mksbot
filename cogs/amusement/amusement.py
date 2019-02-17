@@ -78,7 +78,7 @@ class Amusement:
             #   Iterate through all voice channel members and 'kill' randomly selected members            
             while shot < to_kill:
                 for member in members:
-                    response, kill_check = russian_roulette(member.name, death_chambers, chambers, count)
+                    response, kill_check = russian_roulette(member.name, death_chambers, count)
                     await ctx.send(response)
                     await asyncio.sleep(0.7)
                     count += 1
