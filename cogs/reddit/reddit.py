@@ -29,9 +29,12 @@ class Reddit:
             reddit_response.colour = self.config["reddit"]["response_colour"]
 
         await ctx.send(embed=reddit_response)
-        if tack_on.startswith("https://streamable"):
-            await asyncio.sleep(5)
-        await ctx.send(tack_on)
+
+        if tack_on:
+            if tack_on.startswith("https://streamable"):
+                await asyncio.sleep(5)
+
+            await ctx.send(tack_on)
 
 
 #   This function is used by discord.py to integrate the cog+subroutines into the bot
