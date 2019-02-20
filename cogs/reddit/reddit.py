@@ -1,10 +1,9 @@
 import asyncio
 import yaml
 
-import discord
 from discord.ext import commands
-from cogs.reddit_fun import reddit_embed
-from cogs.reddit_fun import reddit_post
+from cogs.reddit.reddit_fun import reddit_embed
+from cogs.reddit.reddit_fun import reddit_post
 
 
 #   Reddit cog for all things Reddit
@@ -30,9 +29,12 @@ class Reddit:
             reddit_response.colour = self.config["reddit"]["response_colour"]
 
         await ctx.send(embed=reddit_response)
-        if tack_on.startswith("https://streamable"):
-            await asyncio.sleep(5)
-        await ctx.send(tack_on)
+
+        if tack_on:
+            if tack_on.startswith("https://streamable"):
+                await asyncio.sleep(5)
+
+            await ctx.send(tack_on)
 
 
 #   This function is used by discord.py to integrate the cog+subroutines into the bot

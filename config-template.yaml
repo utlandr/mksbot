@@ -16,39 +16,88 @@ reddit:
   response_colour: <hex value>
   description: <Function Description>
 
-donger:
-  description: <Function Description>
-
-roulette:
-  description: <Function Description>
-
-user:
-  description: <Function Description>
-
-play:
-  description: <Function Description>
-  
-leave:
-  description: <Function Description>
-
-pause:
-  description: <Function Description>
-
-resume:
-  description: <Function Description>
-  
-stream:
-  description: <Function Description>
-  
-youtube:
-  description: <Function Description>
-  
-volume:
-  description: <Function Description>
-
-summon:
-  description: <Function Description>
-
 streamable:
   user: <Streamable username>
   pw: <Streamable password>
+
+help:
+  Management:
+    user:
+      invocation: "!user"
+      description: "List information about a user on this server"
+      example: "!user <user | @user>"
+      options: "user | @user   -    Can be either the name, server nickname, or @mention"
+
+  Voice and Music:
+    summon:
+      invocation: "!summon"
+      description: "Summon MksBot to current or specified voice channel"
+      example: "!summon <V.C.>"
+      options: "V.C.    -    Name of the voice channel to move MksBot into. If left empty channel defaults to users current channel"
+
+    leave:
+      invocation: "!leave"
+      description: "Disconnect the bot from the voice channel (end sound)"
+      example: "!leave"
+      options:
+
+    roulette:
+      invocation: "!roulette"
+      description: "Kick users from the current discord voice channel... Russian Roulette style"
+      example: "!roulette <no. kill> <no. chambers>"
+      options: "no. kill    -    Number of members to kill\nno. chambers    -    no of chambers in the game"
+
+    volume:
+      invocation: "!volume"
+      description: "Adjust the volume of the bot"
+      example: "!volume <val>"
+      options: "    -    set volume to a value between 0-100"
+
+    pause:
+      invocation: "!pause"
+      description: "Pause current audio feed (if playing)"
+      example: "!pause"
+      options:
+
+    resume:
+      invocation: "!resume"
+      description: "Resume current audio feed (if paused)"
+      example: "!resume"
+      options:
+
+    skip:
+      invocation: "!skip"
+      description: "Skip current audio"
+      example: "!skip"
+      options:
+
+    stream:
+      invocation: "!stream"
+      description: "Stream youtube audio (can supply a link or search term)"
+      example: "!stream <YouTube URL>"
+      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
+
+    youtube:
+      invocation:  "!youtube"
+      description: "Same as !stream except save file locally (requires admin privileges)"
+      example: "!youtube  <Youtube URL>"
+      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
+
+    play:
+      invocation: "!play"
+      description: "Play locally saved audio file (must have admin privileges)"
+      example: "!play <filepath>"
+      options: "filepath    -    Local audio file location"
+
+  Media and Random:
+    donger:
+      invocation: "!donger"
+      description: "Summon a donger"
+      example: "!donger"
+      options:
+
+    reddit:
+      invocation: "!reddit"
+      description: "Retrieve a post from a subreddit"
+      example: "!reddit <subreddit>"
+      options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all"
