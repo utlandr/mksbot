@@ -1,12 +1,13 @@
 #   DISCLAIMER - Most of this cog is an adaptation of the 'basic-voice'
 #   cog provided in Rapptz discord.py repository (under the examples subdirectory)
-
 import discord
 from discord.ext import commands
 
 from cogs.voice.voice_fun import bot_audible_update
+from cogs.voice.voice_fun import create_playing_embed
+from cogs.voice.voice_fun import format_duration
 from cogs.voice.voice_fun import play_queue
-from cogs.voice.voice_fun import queue
+from cogs.voice.voice_fun import add_queue
 from cogs.voice.voice_fun import YTDLSource
 
 
@@ -35,10 +36,10 @@ class Music:
             if channel is not None:
                 if ctx.voice_client is not None:
                     await ctx.voice_client.move_to(channel)
-                    await bot_audible_update(ctx, "Entering")
                     return
 
                 await channel.connect()
+                await bot_audible_update(ctx, "Entering")
 
         #   No input implies connect to users current voice channel
         else:
@@ -47,8 +48,7 @@ class Music:
                 await ctx.voice_client.move_to(channel)
             else:
                 await ctx.author.voice.channel.connect()
-
-            await bot_audible_update(ctx, "Entering")
+                await bot_audible_update(ctx, "Entering")
 
     #   Leave the discord channel (also stops audio)
     @commands.command()
@@ -78,7 +78,7 @@ class Music:
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
-            await queue(self, ctx, player)
+            await add_queue(self, ctx, player)
 
         else:
             self.queues[guild_id] = [player]
@@ -102,7 +102,7 @@ class Music:
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
-            await queue(self, ctx, player)
+            await add_queue(self, ctx, player)
 
         else:
             self.queues[guild_id] = [player]
@@ -125,7 +125,7 @@ class Music:
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
-            await queue(self, ctx, player)
+            await add_queue(self, ctx, player)
 
         else:
             self.queues[guild_id] = [player]
@@ -180,20 +180,92 @@ class Music:
         :param ctx: command invocation message context
         :return: None
         """
-        
         ctx.voice_client.resume()
 
     #   Skip current song and play the next one
     @commands.command()
-    async def skip(self, ctx):
+    async def skip(self, ctx, *queue_id: int):
         """Skips current player and player the next player in the queue
 
-        :param ctx:
+        :param ctx: command invocation message context
+        :param queue_id: 1-based queue index to remove player
         :return:
         """
-        player_title = ctx.voice_client.source.title
-        await ctx.send("Skipping:\t{}".format(player_title))
-        ctx.voice_client.stop()
+        if queue_id:
+            guild_id = ctx.message.guild.id
+            if queue_id[0] and queue_id[0] <= len(self.queues[guild_id]):
+                removed = self.queues[guild_id].pop(queue_id[0]-1).title
+                await ctx.send("Removed:\t{}".format(removed))
+        else:
+
+            player_title = ctx.voice_client.source.title
+            await ctx.send("Skipping:\t{}".format(player_title))
+            ctx.voice_client.stop()
+
+    #   Display information about current audio being played
+    @commands.command()
+    async def player(self, ctx):
+        """Display information about current audio being played
+
+        :param ctx: command invocation message context
+        :return:
+        """
+
+        if ctx.voice_client:
+            if ctx.voice_client.source:
+                source = ctx.voice_client.source
+                status = "Paused" if ctx.voice_client.is_paused() else "Playing"
+                embed_playing = create_playing_embed(source, status)
+                await ctx.send(embed=embed_playing)
+
+    #   View the queue of the existing playlist
+    @commands.command()
+    async def queue(self, ctx):
+        """
+
+        :param ctx: command invocation message context
+        :return:
+        """
+        guild_id = ctx.message.guild.id
+        players = self.queues[guild_id].copy()
+
+        if guild_id in self.queues:
+            source = ctx.voice_client.source
+
+            embed_queue = discord.Embed(title=" ",
+                                        description=" ",
+                                        color=0xeee657)
+
+            embed_queue.set_author(name="MksBot Player Playlist Queue",
+                                   url="https://github.com/utlandr/mksbot",
+                                   icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+
+            queue_string = ""
+            count = 0
+            total_duration = 0
+            players.insert(0, source)
+            for player in players:
+                playlist_id = count if count else "Playing"
+                duration = format_duration(player.data["duration"])
+                total_duration += player.data["duration"]
+                queue_string += "{0}. {1} | [{2}]({3})\n\n".format(playlist_id,
+                                                                   duration,
+                                                                   player.title,
+                                                                   player.data["webpage_url"])
+                count += 1
+
+            embed_queue.add_field(name="Total Runtime",
+                                  value=format_duration(total_duration))
+
+            embed_queue.add_field(name="Total in Queue",
+                                  value=count)
+            embed_queue.add_field(name="\u200b",
+                                  value="\u200b",
+                                  inline=False)
+            embed_queue.add_field(name="Queue",
+                                  value=queue_string,
+                                  inline=False)
+            await ctx.send(embed=embed_queue)
 
     @play.before_invoke
     @yt.before_invoke

@@ -21,13 +21,6 @@ streamable:
   pw: <Streamable password>
 
 help:
-  Management:
-    user:
-      invocation: "!user"
-      description: "List information about a user on this server"
-      example: "!user <user | @user>"
-      options: "user | @user   -    Can be either the name, server nickname, or @mention"
-
   Voice and Music:
     summon:
       invocation: "!summon"
@@ -68,7 +61,19 @@ help:
     skip:
       invocation: "!skip"
       description: "Skip current audio"
-      example: "!skip"
+      example: "!skip <queue_id>"
+      options: "queue_id    -    The audio position in the queue (use !queue to view all ids. Defaults to audio currently playing"
+
+    player:
+      invocation: "!player"
+      description: "View information about what is currently being played"
+      example: "!player"
+      options:
+
+    queue:
+      invocation: "!queue"
+      description: "View the current playlist queue and summary information."
+      example: "!queue"
       options:
 
     stream:
@@ -101,3 +106,10 @@ help:
       description: "Retrieve a post from a subreddit"
       example: "!reddit <subreddit>"
       options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all"
+
+  Management:
+    user:
+      invocation: "!user"
+      description: "List information about a user on this server"
+      example: "!user <user | @user>"
+      options: "user | @user   -    Can be either the name, server nickname, or @mention"

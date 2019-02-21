@@ -82,7 +82,7 @@ async def bot_audible_update(ctx, state):
             await asyncio.sleep(1.7)
 
 
-async def queue(music, ctx, player):
+async def add_queue(music, ctx, player):
     """Add player to a music queue
 
     :param music: The bot's Music cog instance
@@ -90,10 +90,9 @@ async def queue(music, ctx, player):
     :param player: the music player object
     :return: None
     """
-    guild = ctx.message.guild
-    music.queues[guild.id].append(player)
-    response = "Audio Queued:\t{}".format(player.title)
-    await ctx.send(response)
+    guild_id = ctx.message.guild.id
+    music.queues[guild_id].append(player)
+    await ctx.send(embed=create_queued_embed(player, len(music.queues[guild_id])))
 
 
 #   Queue player
@@ -112,7 +111,8 @@ def play_queue(music, ctx):
 
             ctx.voice_client.play(player, after=lambda e: print(e) if e else play_queue(music, ctx))
             ctx.voice_client.source.volume = music.cur_volume
-            asyncio.run_coroutine_threadsafe(ctx.send("Now playing:\t{}".format(player.title)), loop=music.bot.loop)
+            asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(player, "Playing")),
+                                             loop=music.bot.loop)
         else:
             pass
 
@@ -128,3 +128,101 @@ def check_queue(c_queue, c_id):
         return True
     else:
         return False
+
+
+def format_duration(duration):
+    """
+
+    :param duration: integer time in seconds
+    :return: formatted minute:second time string
+    """
+    formatted = "{:02d}:{:02d}".format(round(duration / 60), duration % 60)
+
+    return formatted
+
+
+def create_playing_embed(source, status):
+    """Generate a playing embed source
+
+    :param source: The audio player source object
+    :param status: Verbose description of the players status
+    :return: a discord.Embed object containing player information
+    """
+    embed_playing = discord.Embed(title=" ",
+                                  description=" ",
+                                  color=0xeee657)
+
+    embed_playing.set_author(name="MksBot Player - Now Playing",
+                             url="https://github.com/utlandr/mksbot",
+                             icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+
+    embed_playing.add_field(name="Audio",
+                            value="[{}]({})".format(source.title, source.data["webpage_url"]),
+                            inline=False)
+
+    embed_playing.add_field(name="Duration",
+                            value=format_duration(source.data["duration"]),
+                            inline=False)
+
+    embed_playing.add_field(name="Status",
+                            value=status)
+
+    embed_playing.set_thumbnail(url=source.data["thumbnail"])
+
+    return embed_playing
+
+
+def create_queued_embed(source, position):
+    """Generate a queued audio embed
+
+    :param source: The audio player source object
+    :param position: THe position in the queue
+    :return:
+    """
+    embed_queued = discord.Embed(title=" ",
+                                 description=" ",
+                                 color=0xeee657)
+
+    embed_queued.set_author(name="MksBot Player - Queued Audio",
+                            url="https://github.com/utlandr/mksbot",
+                            icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+
+    embed_queued.add_field(name="Audio",
+                           value="[{}]({})".format(source.title, source.data["webpage_url"]),
+                           inline=False)
+
+    embed_queued.add_field(name="Duration",
+                           value=format_duration(source.data["duration"]),
+                           inline=False)
+
+    embed_queued.add_field(name="Status",
+                           value="Queued: {}".format(int_to_ordinal(position)))
+
+    embed_queued.set_thumbnail(url=source.data["thumbnail"])
+
+    return embed_queued
+
+
+def int_to_ordinal(num):
+    """Convert int value to ordinal string
+
+    :param num: Integer
+    :return:
+    """
+    if num > 9:
+        second_last = str(num)[-2]
+        if second_last == "1":
+            append = "th"
+            return "{}{}".format(num, append)
+
+    last = num % 10
+    if last == 1:
+        append = "st"
+    elif last == 2:
+        append = "nd"
+    elif last == 3:
+        append = "rd"
+    else:
+        append = "th"
+
+    return "{}{}".format(num, append)
