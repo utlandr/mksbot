@@ -6,7 +6,6 @@ import yaml
 from discord.ext import commands
 
 from base_functions import *
-from cogs.amusement.amusement_fun import get_random_donger
 
 if not discord.opus.is_loaded():
     discord.opus.load_opus('opus')
