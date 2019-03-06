@@ -37,8 +37,8 @@ help:
     roulette:
       invocation: "!roulette"
       description: "Kick users from the current discord voice channel... Russian Roulette style"
-      example: "!roulette <no. kill> <no. chambers>"
-      options: "no. kill    -    Number of members to kill\nno. chambers    -    no of chambers in the game"
+      example: "!roulette <no. kill> <no. chambers> <mode>"
+      options: "no. kill    -    Number of members to kill\nno. chambers    -    no of chambers in the game\nmode    -    Roulette mode. can be 'kill' to send user to send user to R.I.P. voice channel or 'nerf' which doesnt move anyone. Default is 'kill'"
 
     volume:
       invocation: "!volume"
@@ -104,9 +104,8 @@ help:
     reddit:
       invocation: "!reddit"
       description: "Retrieve a post from a subreddit"
-      example: "!reddit <subreddit>"
-      options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all"
-
+      example: "!reddit <subreddit> <sorting>"
+      options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all\nsorting    -    Retrieve order. Can be 'hot', 'new' of 'top'. Defaults to 'hot'"
   Management:
     user:
       invocation: "!user"

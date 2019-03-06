@@ -27,7 +27,14 @@ def reddit_post(sub, sort_by, n_posts=100):
             return "r/{} not found".format(sub), None
 
     #   Grab a list of non-hidden (unread) posts
-    post_list = subreddit.hot(limit=n_posts)
+    if sort_by is "hot":
+        post_list = subreddit.hot(limit=n_posts)
+
+    elif sort_by is "new":
+        post_list = subreddit.new(limit=n_posts)
+
+    elif sort_by is "top":
+        post_list = subreddit.top(limit=n_posts)
 
     #   Return a submission that hasn't previously been shown, hide posts that don't meet embedded criteria
     for submission in post_list:
