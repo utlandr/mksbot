@@ -2,6 +2,7 @@ import asyncio
 import yaml
 
 from discord.ext import commands
+from cogs.reddit.reddit_fun import clear_hidden
 from cogs.reddit.reddit_fun import reddit_embed
 from cogs.reddit.reddit_fun import reddit_post
 
@@ -35,6 +36,18 @@ class Reddit:
                 await asyncio.sleep(5)
 
             await ctx.send(tack_on)
+
+    @commands.command(pass_context=True)
+    @commands.has_permissions(administrator=True)
+    async def reddit_clear(self, ctx, posts=10):
+        """Clears a specified number of posts from the reddit account hidden set
+
+        :param ctx: command invocation message context
+        :param posts: number of posts to remove
+        :return: None
+        """
+        clear_hidden(posts)
+        await ctx.send("Posts successfully unhidden")
 
 
 #   This function is used by discord.py to integrate the cog+subroutines into the bot

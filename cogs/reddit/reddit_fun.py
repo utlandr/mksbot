@@ -36,6 +36,9 @@ def reddit_post(sub, sort_by, n_posts=100):
     elif sort_by is "top":
         post_list = subreddit.top(limit=n_posts)
 
+    else:
+        post_list = subreddit.hot(limit=n_posts)
+
     #   Return a submission that hasn't previously been shown, hide posts that don't meet embedded criteria
     for submission in post_list:
         if (len(submission.selftext)) < 2048 and len(submission.title) < 256 and not submission.stickied:
