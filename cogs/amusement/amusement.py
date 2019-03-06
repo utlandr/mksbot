@@ -26,12 +26,13 @@ class Amusement:
         await ctx.send(get_random_donger())
 
     @commands.command(pass_context=True)
-    async def roulette(self, ctx, to_kill=1, chambers=6):
+    async def roulette(self, ctx, to_kill=1, chambers=6, mode="kill"):
         """Play a game of Russian Roulette to kick members out of a discord voice channel
 
         :param ctx: command invocation message context
         :param to_kill: number of members in the voice channel to remove
         :param chambers: number of 'trigger' events to remove players
+        :param mode: mode game mode (kill or nerf)
         :return: None
         """
         
@@ -41,7 +42,7 @@ class Amusement:
             guild = ctx.guild
             members = channel.members
             n_mem = len(members)
-            
+
             if to_kill > n_mem:
                 to_kill = n_mem
             
@@ -84,9 +85,10 @@ class Amusement:
                     count += 1
 
                     if kill_check:
+                        if mode == "kill":
+                            members.remove(member)
+                            await member.move_to(graveyard_vc, reason="Shot behind the barn by MksBot")
                         shot += 1
-                        members.remove(member)
-                        await member.move_to(graveyard_vc, reason="Shot behind the barn by MksBot")
                         break
 
         else:
