@@ -27,13 +27,13 @@ def reddit_post(sub, sort_by, n_posts=100):
             return "r/{} not found".format(sub), None
 
     #   Grab a list of non-hidden (unread) posts
-    if sort_by is "hot":
+    if sort_by == "hot":
         post_list = subreddit.hot(limit=n_posts)
 
-    elif sort_by is "new":
+    elif sort_by == "new":
         post_list = subreddit.new(limit=n_posts)
 
-    elif sort_by is "top":
+    elif sort_by == "top":
         post_list = subreddit.top(limit=n_posts)
 
     else:
