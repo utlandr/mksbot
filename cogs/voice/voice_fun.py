@@ -207,7 +207,7 @@ def int_to_ordinal(num):
     """Convert int value to ordinal string
 
     :param num: Integer
-    :return: String representing the translated ordinal
+    :return:pu String representing the translated ordinal
     """
     if num > 9:
         second_last = str(num)[-2]
