@@ -4,10 +4,11 @@
 *.log
 *.exe
 
-#   Ignore directories
+#   Ignore directories/folders
 .vscode
 __pycache__
 .idea
 venv
+sandbox
 
 #   Ignore files
