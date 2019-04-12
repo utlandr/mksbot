@@ -66,7 +66,6 @@ def reddit_embed(submission):
 
     #   image/gif format
     if hasattr(submission, "post_hint"):
-        print(submission.post_hint, submission.url)
         if submission.post_hint == "image":
             embedded.set_image(url=submission.url)
 
