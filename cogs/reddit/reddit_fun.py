@@ -58,7 +58,7 @@ def reddit_embed(submission):
     """
 
     #   Every post will contain base details/submission text
-    embedded = Embed(title=submission.title,
+    embedded = Embed(title="{}\n{}\n\n".format(submission.subreddit_name_prefixed, submission.title),
                      description=submission.selftext,
                      url=submission.shortlink).set_footer(text="Submitted by:\tu/{}".format(submission.author))
 

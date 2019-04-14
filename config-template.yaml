@@ -79,8 +79,8 @@ help:
     stream:
       invocation: "!stream"
       description: "Stream youtube audio (can supply a link or search term)"
-      example: "!stream <YouTube URL>"
-      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
+      example: "!stream <YouTube URL | Youtube Search>"
+      options: "URL | Search    -    Youtube URL or search query"
 
     youtube:
       invocation:  "!youtube"
