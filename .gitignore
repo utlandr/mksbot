@@ -1,5 +1,4 @@
 #   Ignore file formats
-*.txt
 *.yml
 *.log
 *.exe
@@ -9,5 +8,6 @@
 __pycache__
 .idea
 venv
+sandbox
 
 #   Ignore files
