@@ -8,7 +8,7 @@ from cogs.reddit.reddit_fun import reddit_post
 
 
 #   Reddit cog for all things Reddit
-class Reddit:
+class Reddit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = yaml.safe_load(open("config.yml"))
