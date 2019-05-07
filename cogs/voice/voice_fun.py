@@ -1,10 +1,20 @@
 import asyncio
+import random
+import wave
 
 import discord
+import yaml
 import youtube_dl
 
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
+
+#   Import yaml configs
+voice_config = yaml.safe_load(open("cogs/voice/voice_config.yml"))
+droid_speak_config = voice_config["droid_speak"]
+
+#   Set the random seed
+random.seed(31)
 
 #   YT stream options
 ytdl_format_options = {'format': 'bestaudio/best',
@@ -66,7 +76,7 @@ async def bot_audible_update(ctx, state):
     """
     if ctx.voice_client:
         if state is "Entering":
-            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("./audio/mksbot_enter.wav"))
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["enter_audio"]))
             await asyncio.sleep(0.5)
             if ctx.voice_client.is_playing():
                 ctx.voice_client.source = source
@@ -74,7 +84,7 @@ async def bot_audible_update(ctx, state):
                 ctx.voice_client.play(source, after=lambda e: print('Player error: %s' % e) if e else None)
 
         else:
-            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio("./audio/mksbot_left.wav"))
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["left_audio"]))
             if ctx.voice_client.is_playing():
                 ctx.voice_client.source = source
             else:
@@ -226,3 +236,63 @@ def int_to_ordinal(num):
         append = "th"
 
     return "{}{}".format(num, append)
+
+
+async def droid_speak_translate(ctx, phrase):
+    """Translates user supplied text into droid speak audio that the bot will speak in a voice channel
+
+    :param ctx: command invocation message context
+    :param phrase: String containing user supplied text
+    :return: None
+    """
+
+    encode = list()
+    infiles = list()
+    char_tot = 0
+
+    for word in phrase:
+        char_tot += len(word)
+        if char_tot > droid_speak_config["char_limit"]:
+            break
+
+        else:
+            seed = unique_num(word)
+            random.seed(seed)
+            encode.extend(random.choices(list(droid_speak_config["alphabet"].keys()), k=len(word)))
+            encode.append("space")
+
+    for c in encode:
+        if c in droid_speak_config["alphabet"].keys():
+            infiles.append(droid_speak_config["alphabet"][c])
+
+        elif c is "space":
+            infiles.append(droid_speak_config["space"])
+
+    if infiles:
+        wav_params = droid_speak_config["header"].values()
+
+        outfile = "./audio/output/sounds.wav"
+
+        with wave.open(outfile, "wb") as output:
+            output.setparams(wav_params)
+            for infile in infiles:
+                with wave.open(infile, 'rb') as w:
+                    data = [[w.getparams(), w.readframes(w.getnframes())]]
+                    output.writeframes(data[0][1])
+
+        source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(outfile))
+        ctx.voice_client.play(source)
+
+
+def unique_num(s):
+    """Transform a string into a 'unique' integer value
+
+    :param s: string to convert
+    :return ret: unique integer value
+    """
+    ret=0
+
+    for i, j in enumerate(s):
+        ret += ord(j) << (i*8)
+
+    return ret

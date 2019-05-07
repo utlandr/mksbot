@@ -9,7 +9,7 @@ from cogs.amusement.amusement_fun import russian_roulette
 
 
 #   Amusement class cog addon to mksbot main. Primarily contains random/non-admin type commands
-class Amusement:
+class Amusement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = yaml.safe_load(open("config.yml"))

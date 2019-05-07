@@ -3,7 +3,11 @@ import sys
 import traceback
 import yaml
 
+from cogs.reddit.reddit import Reddit
+from cogs.amusement.amusement import Amusement
+from cogs.voice.voice import Music
 from discord.ext import commands
+
 
 from base_functions import *
 
@@ -16,14 +20,14 @@ config = yaml.safe_load(open("./config.yml"))
 bot = commands.Bot(command_prefix='!', description=config['bot']['description'])
 client = discord.Client()
 
-cogs = ['cogs.reddit.reddit',
-        'cogs.amusement.amusement',
-        'cogs.voice.voice']
+cogs = [Reddit(bot),
+        Amusement(bot),
+        Music(bot)]
         
 if __name__ == '__main__':
     for extension in cogs:
         try:
-            bot.load_extension(extension)
+            bot.add_cog(extension)
 
         except Exception as e:
             print('Failed to load extension {}.'.format(extension), file=sys.stderr)
