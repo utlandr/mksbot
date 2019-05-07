@@ -1,17 +1,19 @@
 #   DISCLAIMER - Most of this cog is an adaptation of the 'basic-voice'
-#   cog provided in Rapptz discord.py repository (under the examples subdirectory)
+#   cog provided in Rapptz discord.py repository (under the examples
+#   subdirectory)
 import discord
 from discord.ext import commands
 
 from cogs.voice.voice_fun import bot_audible_update
 from cogs.voice.voice_fun import create_playing_embed
+from cogs.voice.voice_fun import droid_speak_translate
 from cogs.voice.voice_fun import format_duration
 from cogs.voice.voice_fun import play_queue
 from cogs.voice.voice_fun import add_queue
 from cogs.voice.voice_fun import YTDLSource
 
 
-class Music:
+class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.def_volume = 0.1
@@ -73,7 +75,8 @@ class Music:
         :return: None
         """
         async with ctx.typing():
-            player = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(query))
+            audio = discord.FFmpegPCMAudio(query)
+            player = discord.PCMVolumeTransformer(audio)
             player.title = query.split("/")[-1]
 
         guild_id = ctx.message.guild.id
@@ -121,7 +124,9 @@ class Music:
         """
 
         async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            player = await YTDLSource.from_url(url,
+                                               loop=self.bot.loop,
+                                               stream=True)
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
@@ -144,21 +149,23 @@ class Music:
         """
 
         try:
-            bot_volume = ctx.voice_client.source.volume
+            bot_volume = int(ctx.voice_client.source.volume * 100)
 
         except AttributeError:
-            return await ctx.send("Audio not initialized\nDefault audio volume is {}%".format(self.def_volume * 100))
+            perc_vol = self.def_volume * 100
+            msg = "Audio not initialized\nDefault audio volume is {}%".format(perc_vol)
+            return await ctx.send(msg)
 
         if volume:
-            if volume[0] in range(1, 101) and volume[0] != int(bot_volume * 100):
+            if volume[0] in range(1, 101) and volume[0] != bot_volume:
                 if ctx.voice_client is None:
                     return await ctx.send("You are not connected to a voice channel.")
 
-                ctx.voice_client.source.volume = volume[0]/100
-                self.cur_volume = volume[0]/100
+                ctx.voice_client.source.volume = volume[0] / 100
+                self.cur_volume = volume[0] / 100
                 return await ctx.send("Changed volume to {}%".format(int(volume[0])))
 
-        return await ctx.send("Current volume is {}%".format(int(bot_volume * 100)))
+        return await ctx.send("Current volume is {}%".format(bot_volume))
 
     #   Pause current audio stream
     @commands.command()
@@ -171,7 +178,7 @@ class Music:
 
         if ctx.voice_client.is_playing():
             ctx.voice_client.pause()
-    
+
     #   Resume current audio stream
     @commands.command()
     async def resume(self, ctx):
@@ -194,7 +201,7 @@ class Music:
         if queue_id:
             guild_id = ctx.message.guild.id
             if queue_id[0] and queue_id[0] <= len(self.queues[guild_id]):
-                removed = self.queues[guild_id].pop(queue_id[0]-1).title
+                removed = self.queues[guild_id].pop(queue_id[0] - 1).title
                 await ctx.send("Removed:\t{}".format(removed))
         else:
 
@@ -267,9 +274,20 @@ class Music:
                                   inline=False)
             await ctx.send(embed=embed_queue)
 
+    @commands.command()
+    async def speak(self, ctx, *phrase: str):
+        """Have the bot translate a phrase into Droidspeak (activate Star Wars Nerd Mode)
+
+        :param ctx: command invocation message context
+        :return: None
+        """
+        if not ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
+            await droid_speak_translate(ctx, phrase)
+
     @play.before_invoke
     @yt.before_invoke
     @stream.before_invoke
+    @speak.before_invoke
     async def ensure_voice(self, ctx):
         """Checks made on selection command before invocation
 
