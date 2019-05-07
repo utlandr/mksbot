@@ -9,5 +9,8 @@ __pycache__
 .idea
 venv
 sandbox
+audio/raw
 
 #   Ignore files
+audio/output/sounds.wav
+
