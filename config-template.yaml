@@ -37,8 +37,8 @@ help:
     roulette:
       invocation: "!roulette"
       description: "Kick users from the current discord voice channel... Russian Roulette style"
-      example: "!roulette <no. kill> <no. chambers> <mode>"
-      options: "no. kill    -    Number of members to kill\nno. chambers    -    no of chambers in the game\nmode    -    Roulette mode. can be 'kill' to send user to send user to R.I.P. voice channel or 'nerf' which doesnt move anyone. Default is 'kill'"
+      example: "!roulette <no. kill> <no. chambers>"
+      options: "no. kill    -    Number of members to kill\nno. chambers    -    no of chambers in the game"
 
     volume:
       invocation: "!volume"
@@ -79,8 +79,8 @@ help:
     stream:
       invocation: "!stream"
       description: "Stream youtube audio (can supply a link or search term)"
-      example: "!stream <YouTube URL | Youtube Search>"
-      options: "URL | Search    -    Youtube URL or search query"
+      example: "!stream <YouTube URL>"
+      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
 
     youtube:
       invocation:  "!youtube"
@@ -94,6 +94,12 @@ help:
       example: "!play <filepath>"
       options: "filepath    -    Local audio file location"
 
+    speak:
+      invocation: "!speak"
+      description: "MksBot will translate text and speak Droid Speak from Star Wars"
+      example: "!speak <sentence>"
+      options: "sentence    -    Text for MksBot to translate (500 characters max)"
+
   Media and Random:
     donger:
       invocation: "!donger"
@@ -104,8 +110,9 @@ help:
     reddit:
       invocation: "!reddit"
       description: "Retrieve a post from a subreddit"
-      example: "!reddit <subreddit> <sorting>"
-      options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all\nsorting    -    Retrieve order. Can be 'hot', 'new' of 'top'. Defaults to 'hot'"
+      example: "!reddit <subreddit>"
+      options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all"
+
   Management:
     user:
       invocation: "!user"
