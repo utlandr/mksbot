@@ -249,20 +249,33 @@ class Music(commands.Cog):
 
             queue_string = ""
             count = 0
-            total_duration = 0
             players.insert(0, source)
+
             for player in players:
                 playlist_id = count if count else "Playing"
-                duration = format_duration(player.data["duration"])
-                total_duration += player.data["duration"]
+
+                if player.data["is_live"]:
+                    duration = "LIVE"
+
+                else:
+                    duration = format_duration(player.data["duration"])
+
                 queue_string += "{0}. {1} | [{2}]({3})\n\n".format(playlist_id,
                                                                    duration,
                                                                    player.title,
                                                                    player.data["webpage_url"])
                 count += 1
 
+            if source.data["is_live"]:
+                total_duration = "LIVE"
+
+            else:
+                total_duration = format_duration(sum([player.data["duration"]
+                                                      for player in players
+                                                      if not player.data["is_live"]]))
+
             embed_queue.add_field(name="Total Runtime",
-                                  value=format_duration(total_duration))
+                                  value=total_duration)
 
             embed_queue.add_field(name="Total in Queue",
                                   value=count)

@@ -158,6 +158,12 @@ def create_playing_embed(source, status):
     :param status: Verbose description of the players status
     :return: a discord.Embed object containing player information
     """
+    if source.data["is_live"]:
+        duration = "LIVE"
+
+    else:
+        duration = format_duration(source.data["duration"])
+
     embed_playing = discord.Embed(title=" ",
                                   description=" ",
                                   color=0xeee657)
@@ -171,7 +177,7 @@ def create_playing_embed(source, status):
                             inline=False)
 
     embed_playing.add_field(name="Duration",
-                            value=format_duration(source.data["duration"]),
+                            value=duration,
                             inline=False)
 
     embed_playing.add_field(name="Status",
@@ -189,6 +195,12 @@ def create_queued_embed(source, position):
     :param position: THe position in the queue
     :return:
     """
+    if source.data["is_live"]:
+        duration = "LIVE"
+
+    else:
+        duration = format_duration(source.data["duration"])
+
     embed_queued = discord.Embed(title=" ",
                                  description=" ",
                                  color=0xeee657)
@@ -202,7 +214,7 @@ def create_queued_embed(source, position):
                            inline=False)
 
     embed_queued.add_field(name="Duration",
-                           value=format_duration(source.data["duration"]),
+                           value=duration,
                            inline=False)
 
     embed_queued.add_field(name="Status",
