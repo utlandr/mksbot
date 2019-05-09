@@ -125,3 +125,9 @@ help:
       description: "Remove messages in the current text channel (requires admin privileges). If there are a lot of messages, this could take a while"
       example: "!rm <number | 'purge' >"
       options: "number    -    The number of messages to remove. Defaults to 1 if no number is given.\n'purge'    -    If 'purge' is given to the rm command, deletes all messages in the text channel"
+
+    reddit_clear:
+      invocation: "!reddit_clear"
+      description: "Unhide reddit posts on the bots account (requires admin privileges)"
+      example: "!reddit_clear <posts>"
+      options: "posts    -    The number of posts to unhide. If nothing is supplied, unhides all posts"
