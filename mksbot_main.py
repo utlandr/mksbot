@@ -109,6 +109,10 @@ async def user_error(error):
 @bot.command(pass_context=True)
 async def help(ctx, *args):
     """Display command information and invocation syntax
+
+    :param ctx: command invocation message context
+    :param args: If given, the specific command for further detail
+    :return: None
     """
     if not args:
         embed = discord.Embed(title=" ",
