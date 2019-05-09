@@ -169,10 +169,10 @@ def create_playing_embed(source, status):
     embed_playing.add_field(name="Audio",
                             value="[{}]({})".format(source.title, source.data["webpage_url"]),
                             inline=False)
-
-    embed_playing.add_field(name="Duration",
-                            value=format_duration(source.data["duration"]),
-                            inline=False)
+    if not source.data["is_live"]:
+        embed_playing.add_field(name="Duration",
+                                value=format_duration(source.data["duration"]),
+                                inline=False)
 
     embed_playing.add_field(name="Status",
                             value=status)
