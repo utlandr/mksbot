@@ -276,7 +276,6 @@ async def droid_speak_translate(ctx, phrase):
             random.seed(unique_num(word))
             s_size = len(word) if len(word) < 3 else 3
             addon = random.sample(list(droid_speak_config["alphabet"].keys()), k=s_size)
-            #addon.append("space")
 
             for c in addon:
                 if c in droid_speak_config["alphabet"].keys():
