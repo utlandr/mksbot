@@ -216,7 +216,7 @@ def create_queued_embed(source, position):
     embed_queued.add_field(name="Duration",
                            value=duration,
                            inline=False)
-
+    
     embed_queued.add_field(name="Status",
                            value="Queued: {}".format(int_to_ordinal(position)))
 
@@ -280,7 +280,13 @@ async def droid_speak_translate(ctx, phrase):
             infiles.append(droid_speak_config["space"])
 
     if infiles:
-        wav_params = droid_speak_config["header"].values()
+        wav_params = []
+        wav_params.append(droid_speak_config["header"]["nchannels"])
+        wav_params.append(droid_speak_config["header"]["sampwidth"])
+        wav_params.append(droid_speak_config["header"]["framerate"])
+        wav_params.append(droid_speak_config["header"]["nframes"])
+        wav_params.append(droid_speak_config["header"]["comptype"])
+        wav_params.append(droid_speak_config["header"]["compname"])
 
         outfile = "./audio/output/sounds.wav"
 
