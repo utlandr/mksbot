@@ -1,5 +1,5 @@
 import asyncio
-import random
+import numpy.random as random
 import wave
 
 import discord
@@ -268,9 +268,8 @@ async def droid_speak_translate(ctx, phrase):
             break
 
         else:
-            seed = unique_num(word)
-            random.seed(seed)
-            encode.extend(random.choices(list(droid_speak_config["alphabet"].keys()), k=len(word)))
+            random.seed(31)
+            encode.extend(random.choice(list(droid_speak_config["alphabet"].keys()), len(word)))
             encode.append("space")
 
     for c in encode:
