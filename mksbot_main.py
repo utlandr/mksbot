@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import traceback
@@ -71,6 +72,31 @@ async def user(ctx, *, member: discord.Member):
     await ctx.send(embed=user_info_embed(member))
 
 
+@bot.command(pass_context=True)
+@commands.has_permissions(administrator=True)
+async def rm(ctx, *number):
+    """Remove messages one-by-one in the invoked text channel
+
+    :param ctx: command invocation message context
+    :param number: the number of posts to remove
+    :return: None
+    """
+
+    limit = 1
+    if number:
+        try:
+            n = int(number[0])
+
+            if n > 0:
+                limit = n
+
+        except ValueError as e:
+            if number[0] == "purge":
+                limit = None
+
+    await ctx.channel.purge(limit=limit, bulk=False)
+
+
 @user.error
 async def user_error(error):
     """Handle user method error
@@ -83,6 +109,10 @@ async def user_error(error):
 @bot.command(pass_context=True)
 async def help(ctx, *args):
     """Display command information and invocation syntax
+
+    :param ctx: command invocation message context
+    :param args: If given, the specific command for further detail
+    :return: None
     """
     if not args:
         embed = discord.Embed(title=" ",
