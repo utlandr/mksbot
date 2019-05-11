@@ -10,6 +10,7 @@ __pycache__
 venv
 sandbox
 audio/raw
+audio/mp3
 
 #   Ignore files
 audio/output/sounds.wav
