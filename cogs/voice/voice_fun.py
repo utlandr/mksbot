@@ -258,14 +258,11 @@ async def droid_speak_translate(ctx, phrase):
     :return: None
     """
 
-    encode = list()
     infiles = list()
     char_tot = 0
 
     for word in phrase:
         char_tot += len(word)
-        print(word, demojize(word))
-        test = demojize(word)
         if char_tot > droid_speak_config["char_limit"]:
             break
 

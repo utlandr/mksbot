@@ -59,7 +59,7 @@ droid_speak:
     special:
       # Primary
       "worried": &worr "./audio/droid_speak_audio/concern_beep.wav"
-      "open_mouth":  &open "./audio/droid_speak_audio/surprised_beep.wav"
+      "surprise":  &open "./audio/droid_speak_audio/surprised_beep.wav"
       "zap":  &zap "./audio/droid_speak_audio/electrifyin_beep.wav"
       "eureka":  &eur "./audio/droid_speak_audio/eureka_beep.wav"
       "smiley":  &smiley "./audio/droid_speak_audio/excited_beep.wav"
@@ -72,7 +72,7 @@ droid_speak:
       
       # Secondary
       "worried2": "./audio/droid_speak_audio/confuse_beep.wav"
-      "open_mouth2": "./audio/droid_speak_audio/surprised2_beep.wav"
+      "surprise2": "./audio/droid_speak_audio/surprised2_beep.wav"
       "smiley2": "./audio/droid_speak_audio/excited2_beep.wav"
     
     emoji:

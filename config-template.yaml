@@ -97,8 +97,13 @@ help:
     speak:
       invocation: "!speak"
       description: "MksBot will translate text and speak Droid Speak from Star Wars"
-      example: "!speak <sentence>"
-      options: "sentence    -    Text for MksBot to translate (500 characters max)"
+      example: "!speak <sentence|keyword|emoji>"
+      options: "sentence    -    Text for MksBot to translate (500 characters max). This is done randomly\n
+                keyword    -    Keywords that evoke a special Droidspeak phrase:\n\n
+                                     -    eureka, grin, grinning, happy, laughing, surprise, surprise2,\n
+                                          smiley, smily2, sad, thinking, worried, zap\n\n
+                emoji    -    Emojies that trigger a special response:\n
+                                  -    :worried:"
 
   Media and Random:
     donger:
