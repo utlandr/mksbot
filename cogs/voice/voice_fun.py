@@ -1,7 +1,7 @@
 import asyncio
-import numpy.random as random
+import random
 import wave
-
+from emoji import demojize
 import discord
 import yaml
 import youtube_dl
@@ -264,20 +264,32 @@ async def droid_speak_translate(ctx, phrase):
 
     for word in phrase:
         char_tot += len(word)
+        print(word, demojize(word))
+        test = demojize(word)
         if char_tot > droid_speak_config["char_limit"]:
             break
 
+        elif demojize(word) in droid_speak_config["emoji"].keys():
+            infiles.append(droid_speak_config["emoji"][demojize(word)])
+
+        elif word in droid_speak_config["special"].keys():
+            infiles.append(droid_speak_config["special"][word])
+
         else:
-            random.seed(31)
-            encode.extend(random.choice(list(droid_speak_config["alphabet"].keys()), len(word)))
-            encode.append("space")
+            random.seed(unique_num(word))
+            s_size = len(word) if len(word) < 3 else 3
+            addon = random.sample(list(droid_speak_config["alphabet"].keys()), k=s_size)
+            #addon.append("space")
 
-    for c in encode:
-        if c in droid_speak_config["alphabet"].keys():
-            infiles.append(droid_speak_config["alphabet"][c])
+            for c in addon:
+                if c in droid_speak_config["alphabet"].keys():
+                    infiles.append(droid_speak_config["alphabet"][c])
 
-        elif c is "space":
-            infiles.append(droid_speak_config["space"])
+                elif c is "space":
+                    infiles.append(droid_speak_config["space"])
+
+        infiles.append(droid_speak_config["space"])
+
 
     if infiles:
         wav_params = []

@@ -55,3 +55,36 @@ droid_speak:
       "X": "./audio/droid_speak_audio/X_beep.wav"
       "Y": "./audio/droid_speak_audio/Y_beep.wav"
       "Z": "./audio/droid_speak_audio/Z_beep.wav"
+
+    special:
+      # Primary
+      "worried": &worr "./audio/droid_speak_audio/concern_beep.wav"
+      "open_mouth":  &open "./audio/droid_speak_audio/surprised_beep.wav"
+      "zap":  &zap "./audio/droid_speak_audio/electrifyin_beep.wav"
+      "eureka":  &eur "./audio/droid_speak_audio/eureka_beep.wav"
+      "smiley":  &smiley "./audio/droid_speak_audio/excited_beep.wav"
+      "happy": &happy "./audio/droid_speak_audio/happy_beep.wav"
+      "laughing":  &laugh "./audio/droid_speak_audio/laugh_beep.wav"
+      "grinning":  &grinning "./audio/droid_speak_audio/playful_beep.wav"
+      "grin":  &grin "./audio/droid_speak_audio/proud_beep.wav"
+      "sad":  &sad "./audio/droid_speak_audio/sad_beep.wav"
+      "thinking":  &think "./audio/droid_speak_audio/thinking_beep.wav"    
+      
+      # Secondary
+      "worried2": "./audio/droid_speak_audio/confuse_beep.wav"
+      "open_mouth2": "./audio/droid_speak_audio/surprised2_beep.wav"
+      "smiley2": "./audio/droid_speak_audio/excited2_beep.wav"
+    
+    emoji:
+      # Emoji Bind
+      ":worried_face:": *worr
+      ":face_with_open_mouth:": *open
+      ":high_voltage:": *zap
+      ":nerd_face:": *eur
+      ":grinning_face_with_big_eyes:": *smiley
+      ":grinning_face_with_smiling_eyes:": *happy
+      ":grinning_squinting_face:": *laugh
+      ":grinning_face:": *grinning
+      ":beaming_face_with_smiling_eyes:": *grin
+      ":frowning_face_with_open_mouth:": *sad
+      ":thinking_face:": *think
