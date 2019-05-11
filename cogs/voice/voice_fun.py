@@ -1,7 +1,7 @@
 import asyncio
+from emoji import demojize
 import random
 import wave
-from emoji import demojize
 import discord
 import yaml
 import youtube_dl
