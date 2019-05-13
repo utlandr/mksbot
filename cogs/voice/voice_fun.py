@@ -287,7 +287,7 @@ async def droid_speak_translate(ctx, phrase):
         infiles.append(droid_speak_config["space"])
 
     if infiles:
-        wav_params = []
+        wav_params = list()
         wav_params.append(droid_speak_config["header"]["nchannels"])
         wav_params.append(droid_speak_config["header"]["sampwidth"])
         wav_params.append(droid_speak_config["header"]["framerate"])
