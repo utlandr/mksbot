@@ -314,7 +314,7 @@ def unique_num(s):
     :param s: string to convert
     :return ret: unique integer value
     """
-    ret=0
+    ret = 0
 
     for i, j in enumerate(s):
         ret += ord(j) << (i*8)
