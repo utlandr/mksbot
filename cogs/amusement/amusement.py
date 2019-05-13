@@ -36,7 +36,8 @@ class Amusement(commands.Cog):
         :return: None
         """
         
-        #   Sanitize user input/context where applicable
+        #   If a user invokes !roulette and is not in a channel, an
+        #   AttributeError occurs.
         try:
             channel = ctx.message.author.voice.channel
             guild = ctx.guild
@@ -49,7 +50,7 @@ class Amusement(commands.Cog):
             elif to_kill == 0:
                 to_kill = 1 
                     
-        except Exception:
+        except AttributeError:
             response = '{}: !roulette requires you to be in a voice channel'.format(ctx.message.author.mention)
             await ctx.send(response)
             return
