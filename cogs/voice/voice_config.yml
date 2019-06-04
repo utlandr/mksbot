@@ -1,3 +1,22 @@
+youtube_dl_config:
+  'format': 'bestaudio/best'
+  'restrictfilenames': True
+  'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s'
+  'noplaylist': True
+  'nocheckcertificate': True
+  'ignoreerrors': True
+  'logtostderr': False
+  'quiet': True
+  'no_warnings': True
+  'default_search': 'auto'
+  'source_address': '0.0.0.0' 
+  'buffer_size': '16K'
+
+ffmpeg_config:
+  'options': '-vn'
+  'executable': 'ffmpeg'
+  'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
+
 droid_speak:
     header:
       nchannels: 2

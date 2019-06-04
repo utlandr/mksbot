@@ -11,30 +11,17 @@ youtube_dl.utils.bug_reports_message = lambda: ''
 
 #   Import yaml configs
 voice_config = yaml.safe_load(open("cogs/voice/voice_config.yml"))
+
+#   droid_speak config
 droid_speak_config = voice_config["droid_speak"]
+
+#   YT stream options
+ytdl_format_options = voice_config["youtube_dl_config"]
+ffmpeg_options = voice_config["ffmpeg_config"]
 
 #   Set the random seed
 random.seed(31)
 
-#   YT stream options
-ytdl_format_options = {'format': 'bestaudio/best',
-                       'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-                       'restrictfilenames': True,
-                       'noplaylist': True,
-                       'nocheckcertificate': True,
-                       'ignoreerrors': True,
-                       'logtostderr': False,
-                       'quiet': True,
-                       'no_warnings': True,
-                       'default_search': 'auto',
-                       'source_address': '0.0.0.0',  # ipv4 address only
-                       'buffer_size': '16K',
-                       }
-
-ffmpeg_options = {'options': '-vn',
-                  'executable': 'ffmpeg',
-                  'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-                  }
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
