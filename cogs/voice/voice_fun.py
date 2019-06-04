@@ -157,8 +157,8 @@ def create_playing_embed(source, status):
 
     embed_playing.set_author(
         name="MksBot Player - Now Playing",
-        url="https://github.com/utlandr/mksbot",
-        icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+        url=voice_config["info"]["source_code"],
+        icon_url=voice_config["info"]["image"])
 
     embed_playing.add_field(
         name="Audio",
@@ -197,8 +197,8 @@ def create_queued_embed(source, position):
                                  color=0xeee657)
 
     embed_queued.set_author(name="MksBot Player - Queued Audio",
-                            url="https://github.com/utlandr/mksbot",
-                            icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+                            url=voice_config["info"]["source_code"],
+                            icon_url=voice_config["info"]["image"])
 
     embed_queued.add_field(name="Audio",
                            value="[{}]({})".format(source.title, source.data["webpage_url"]),

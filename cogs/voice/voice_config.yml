@@ -1,3 +1,7 @@
+info:
+  "image": "https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png"
+  "source_code": "https://github.com/utlandr/mksbot"
+
 youtube_dl_config:
   'format': 'bestaudio/best'
   'restrictfilenames': True
