@@ -22,7 +22,6 @@ ffmpeg_options = voice_config["ffmpeg_config"]
 #   Set the random seed
 random.seed(31)
 
-
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
