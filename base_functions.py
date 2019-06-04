@@ -1,10 +1,10 @@
 import discord
 
 
-def user_info_embed(member: discord.Member):
+def user_info_embed(member):
     """Fill empty user embed template with supplied user information
 
-    :param member: discord.Member object containing information about a guild member
+    :param member: string or discord.Member
     :return: discord.Embed object formatted with member specific information
     """
     name = member.display_name
