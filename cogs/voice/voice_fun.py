@@ -68,14 +68,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 async def bot_audible_update(ctx, state):
-    """Play TTS (text to speech) audio specifying the bot leaving/entering a voice channel
+    """Play update audio when leaving/entering channels
 
     :param ctx: command invocation message context:
-    :param state: string specifying whether the bot is entering or leaving the channel
+    :param state: specifies whether the bot is entering or leaving
     :return: None
     """
     if ctx.voice_client:
-        if state is "Entering":
+        if state == "Entering":
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["enter_audio"]))
             await asyncio.sleep(0.5)
             if ctx.voice_client.is_playing():
@@ -164,24 +164,29 @@ def create_playing_embed(source, status):
     else:
         duration = format_duration(source.data["duration"])
 
-    embed_playing = discord.Embed(title=" ",
-                                  description=" ",
-                                  color=0xeee657)
+    embed_playing = discord.Embed(
+        title=" ",
+        description=" ",
+        color=0xeee657)
 
-    embed_playing.set_author(name="MksBot Player - Now Playing",
-                             url="https://github.com/utlandr/mksbot",
-                             icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+    embed_playing.set_author(
+        name="MksBot Player - Now Playing",
+        url="https://github.com/utlandr/mksbot",
+        icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
 
-    embed_playing.add_field(name="Audio",
-                            value="[{}]({})".format(source.title, source.data["webpage_url"]),
-                            inline=False)
+    embed_playing.add_field(
+        name="Audio",
+        value="[{}]({})".format(source.title, source.data["webpage_url"]),
+        inline=False)
 
-    embed_playing.add_field(name="Duration",
-                            value=duration,
-                            inline=False)
+    embed_playing.add_field(
+        name="Duration",
+        value=duration,
+        inline=False)
 
-    embed_playing.add_field(name="Status",
-                            value=status)
+    embed_playing.add_field(
+        name="Status",
+        value=status)
 
     embed_playing.set_thumbnail(url=source.data["thumbnail"])
 
@@ -216,7 +221,7 @@ def create_queued_embed(source, position):
     embed_queued.add_field(name="Duration",
                            value=duration,
                            inline=False)
-    
+
     embed_queued.add_field(name="Status",
                            value="Queued: {}".format(int_to_ordinal(position)))
 
@@ -317,6 +322,6 @@ def unique_num(s):
     ret = 0
 
     for i, j in enumerate(s):
-        ret += ord(j) << (i*8)
+        ret += ord(j) << (i * 8)
 
     return ret
