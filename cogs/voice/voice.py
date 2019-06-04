@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from cogs.voice.voice_fun import bot_audible_update
 from cogs.voice.voice_fun import create_playing_embed
+from cogs.voice.voice_fun import create_queue_embed
 from cogs.voice.voice_fun import droid_speak_translate
 from cogs.voice.voice_fun import format_duration
 from cogs.voice.voice_fun import play_queue
@@ -239,13 +240,7 @@ class Music(commands.Cog):
         if guild_id in self.queues:
             source = ctx.voice_client.source
 
-            embed_queue = discord.Embed(title=" ",
-                                        description=" ",
-                                        color=0xeee657)
-
-            embed_queue.set_author(name="MksBot Player Playlist Queue",
-                                   url="https://github.com/utlandr/mksbot",
-                                   icon_url="https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png")
+            embed_queue = create_queue_embed()
 
             queue_string = ""
             count = 0

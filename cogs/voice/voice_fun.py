@@ -126,6 +126,22 @@ def check_queue(c_queue, c_id):
         return False
 
 
+def create_queue_embed():
+    """Generates the base embed information for !queue command
+
+    returns: a discord.Embed object that contains base queue infoqueued
+    """
+    embed_queue = discord.Embed(title=" ",
+                                description=" ",
+                                color=0xeee657)
+
+    embed_queue.set_author(name="MksBot Player Playlist Queue",
+                           url=voice_config["info"]["source_code"],
+                           icon_url=voice_config["info"]["image"])
+
+    return embed_queue
+
+
 def format_duration(duration):
     """
 
