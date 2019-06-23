@@ -1,7 +1,6 @@
-discord.py==0.16.12
-requests==2.18.4
-emoji==0.5.2
-praw==6.2.0
 youtube_dl==2019.4.30
-discord==1.0.1
-PyYAML==5.1
+requests==2.21.0
+praw==6.2.0
+emoji==0.5.2
+discord.py==1.2.2
+PyYAML==5.1.1
