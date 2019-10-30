@@ -1,9 +1,4 @@
 emoji==0.5.2
-<<<<<<< HEAD
-PyYAML==5.1
-emoji==0.5.2
-=======
->>>>>>> master
 praw==6.2.0
 discord.py==1.2.2
 youtube_dl==2019.4.30
