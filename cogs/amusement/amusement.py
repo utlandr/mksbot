@@ -93,10 +93,9 @@ class Amusement(commands.Cog):
                         break
 
         else:
-            response = ('{}: '.format(ctx.message.author.mention),
-                        'Unless you want to shoot yourself, ',
-                        '!roulette requires at least 1 other person to be in your voice channel.')
+            response = '{} Has a death wish. Denied.'.format(ctx.message.author.mention)
             await ctx.send(response)
+
     
     #   This routine performs checks every time a user's voice state changes (such as switching voice channels)
     async def on_voice_state_update(self, member, before, after):
