@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from cogs.amusement.amusement_fun import get_random_donger
 from cogs.amusement.amusement_fun import russian_roulette
+from cogs.amusement.amusement_fun import target_spam
 
 
 #   Amusement class cog addon to mksbot main. Primarily contains random/non-admin type commands
@@ -93,12 +94,34 @@ class Amusement(commands.Cog):
                         break
 
         else:
-            response = ('{}: '.format(ctx.message.author.mention),
-                        'Unless you want to shoot yourself, ',
-                        '!roulette requires at least 1 other person to be in your voice channel.')
+            response = '{} Has a death wish. Denied.'.format(ctx.message.author.mention)
             await ctx.send(response)
-    
-    #   This routine performs checks every time a user's voice state changes (such as switching voice channels)
+
+    @commands.command(pass_context=True)
+    @commands.has_role("ancient")
+    async def gather(self, ctx, *targets):
+        """Spams a provided set of user names to get on the fucking server
+
+        :param ctx: command invocation message context
+        :param targets: A list of targets
+
+        :return: None
+        """
+        if targets:
+            for target in targets:
+                target_member = discord.utils.find(lambda m: m.name == target or m.mention == target.replace("!", ""),
+                                                   ctx.guild.members)
+                if target_member:
+                    await ctx.send("Spamming {}".format(target))
+                    await target_spam(target_member)
+
+                else:
+                    await ctx.send("Target '{}' not found".format(target))
+
+        else:
+            await ctx.send("No targets supplied")
+
+    # This routine performs checks every time a user's voice state changes (such as switching voice channels)
     async def on_voice_state_update(self, member, before, after):
         b_channel = before.channel
         

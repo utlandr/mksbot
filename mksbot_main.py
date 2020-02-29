@@ -11,8 +11,8 @@ from discord.ext import commands
 
 from base_functions import *
 
-if not discord.opus.is_loaded():
-    discord.opus.load_opus('opus')
+#if not discord.opus.is_loaded():
+#    discord.opus.load_opus('opus')
 
 #   Import config data and extensions (cogs)
 config = yaml.safe_load(open("./config.yml"))
