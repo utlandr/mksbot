@@ -6,6 +6,8 @@ import discord
 from discord.ext import commands
 from cogs.amusement.amusement_fun import get_random_donger
 from cogs.amusement.amusement_fun import russian_roulette
+from cogs.amusement.amusement_fun import target_check
+from cogs.amusement.amusement_fun import target_spam
 
 
 #   Amusement class cog addon to mksbot main. Primarily contains random/non-admin type commands
@@ -96,7 +98,30 @@ class Amusement(commands.Cog):
             response = '{} Has a death wish. Denied.'.format(ctx.message.author.mention)
             await ctx.send(response)
 
-    
+    @commands.command(pass_context=True)
+    @commands.has_role("ancient")
+    async def gather(self, ctx, *targets):
+        """Spams a provided set of user names to get on the fucking server
+
+        :param ctx: command invocation message context
+        :param targets: A list of targets
+
+
+        :return: None
+        """
+        if targets:
+            for target in targets:
+                if target_check(target):
+                    await ctx.message("Spamming {}".format(target))
+                    await target_spam(target)
+
+                else:
+                    await ctx.message("Target '{}' not found".format(target))
+
+        else:
+            print("No targets supplied")
+
+
     #   This routine performs checks every time a user's voice state changes (such as switching voice channels)
     async def on_voice_state_update(self, member, before, after):
         b_channel = before.channel
@@ -110,7 +135,6 @@ class Amusement(commands.Cog):
         
         else:
             pass
-
 
 #   discord.py uses this function to integrate the class+methods into the bot.
 def setup(bot):
