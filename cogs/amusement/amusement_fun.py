@@ -1,4 +1,6 @@
+import asyncio
 import codecs
+import discord
 import random
 
 
@@ -32,3 +34,15 @@ def russian_roulette(name, death_vals, count):
         hit = 0
 
     return response, hit
+
+
+async def target_spam(target: discord.Member, spam_limit=10):
+    """Spams the target member of the guild with several DMs
+
+    :param target: discord.Member object to spam user with messages
+    :param spam_limit: Maximum number of messages to spam the target with
+    :return: None
+    """
+    for i in range(spam_limit):
+        await target.send(content="GET THE FUCK ON HERE", delete_after=30)
+
