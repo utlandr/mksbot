@@ -121,6 +121,7 @@ class Amusement(commands.Cog):
         else:
             await ctx.send("No targets supplied")
 
+
 #   discord.py uses this function to integrate the class+methods into the bot.
 def setup(bot):
     bot.add_cog(Amusement(bot))
