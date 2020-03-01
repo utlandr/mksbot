@@ -121,21 +121,6 @@ class Amusement(commands.Cog):
         else:
             await ctx.send("No targets supplied")
 
-    # This routine performs checks every time a user's voice state changes (such as switching voice channels)
-    async def on_voice_state_update(self, member, before, after):
-        b_channel = before.channel
-        
-        #   Remove temporary voice channel "R.I.P."
-        if b_channel is not None:
-
-            if b_channel.name == "R.I.P.":
-                if not b_channel.members:
-                    await b_channel.delete(reason="Everyone is revived")
-        
-        else:
-            pass
-
-
 #   discord.py uses this function to integrate the class+methods into the bot.
 def setup(bot):
     bot.add_cog(Amusement(bot))
