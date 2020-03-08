@@ -42,7 +42,7 @@ class Music(commands.Cog):
                     return
 
                 await channel.connect()
-                await bot_audible_update(ctx, "Entering")
+                # await bot_audible_update(ctx, "Entering")
 
         #   No input implies connect to users current voice channel
         else:
@@ -51,7 +51,7 @@ class Music(commands.Cog):
                 await ctx.voice_client.move_to(channel)
             else:
                 await ctx.author.voice.channel.connect()
-                await bot_audible_update(ctx, "Entering")
+                # await bot_audible_update(ctx, "Entering")
 
     #   Leave the discord channel (also stops audio)
     @commands.command()
@@ -62,7 +62,7 @@ class Music(commands.Cog):
         :return: None
         """
 
-        await bot_audible_update(ctx, "Leaving")
+        # await bot_audible_update(ctx, "Leaving")
         await ctx.voice_client.disconnect()
 
     #   Play audio locally stored
@@ -305,7 +305,7 @@ class Music(commands.Cog):
         if ctx.voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
-                await bot_audible_update(ctx, "Entering")
+                # await bot_audible_update(ctx, "Entering")
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
