@@ -34,7 +34,28 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.url = data.get('url')
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def info_from_url(cls, url, *, loop=None, stream=False):
+        """Stream audio from a supplied url instead of searching
+
+        :param url: supplied URL
+        :param loop: video looping
+        :param stream: determine if URL is a stream
+        :return:
+        """
+
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream, process=False))
+
+        # TODO: Add support for playlists
+        if 'entries' in data:
+            # take first item from a playlist
+            data = data['entries'][0]
+
+        filename = ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+
+    @classmethod
+    async def data_from_url(cls, url, *, loop=None, stream=False):
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
@@ -43,8 +64,9 @@ class YTDLSource(discord.PCMVolumeTransformer):
         :return:
         """
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream, process=True))
 
+        # TODO: Add support for playlists
         if 'entries' in data:
             # take first item from a playlist
             data = data['entries'][0]
@@ -102,6 +124,7 @@ def play_queue(music, ctx):
     guild_id = ctx.message.guild.id
     if check_queue(music.queues, ctx.message.guild.id):
         if len(music.queues[guild_id]):
+            # Now go get that data.
             player = music.queues[guild_id].pop(0)
             music.players[guild_id] = player
 

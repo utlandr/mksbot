@@ -102,7 +102,7 @@ class Music(commands.Cog):
         """
 
         async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.bot.loop)
+            player = await YTDLSource.info_from_url(url, loop=self.bot.loop)
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
@@ -125,12 +125,17 @@ class Music(commands.Cog):
         """
 
         async with ctx.typing():
-            player = await YTDLSource.from_url(url,
-                                               loop=self.bot.loop,
-                                               stream=True)
+            player = await YTDLSource.info_from_url(url,
+                                                    loop=self.bot.loop,
+                                                    stream=True)
+
+            player = await YTDLSource.data_from_url(url,
+                                                    loop=self.bot.loop,
+                                                    stream=True)
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
+
             await add_queue(self, ctx, player)
 
         else:
