@@ -12,6 +12,7 @@ from cogs.voice.voice_fun import format_duration
 from cogs.voice.voice_fun import play_queue
 from cogs.voice.voice_fun import add_queue
 from cogs.voice.voice_fun import YTDLSource
+from cogs.voice.voice_fun import BotAudio
 
 
 class Music(commands.Cog):
@@ -89,7 +90,6 @@ class Music(commands.Cog):
             response = "Starting a new queue"
             await ctx.send(response)
             play_queue(self, ctx)
-
     #   Download first from YT and play
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -102,7 +102,8 @@ class Music(commands.Cog):
         """
 
         async with ctx.typing():
-            player = await YTDLSource.info_from_url(url, loop=self.bot.loop)
+            source = await YTDLSource.get_info(url, loop=self.bot.loop)
+            player = BotAudio.extract_yt_audio(source.url)
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
@@ -125,13 +126,8 @@ class Music(commands.Cog):
         """
 
         async with ctx.typing():
-            player = await YTDLSource.info_from_url(url,
-                                                    loop=self.bot.loop,
-                                                    stream=True)
-
-            player = await YTDLSource.data_from_url(url,
-                                                    loop=self.bot.loop,
-                                                    stream=True)
+            info = await YTDLSource.get_info(url, loop=self.bot.loop, stream=True)
+            player = BotAudio.extract_yt_audio(info.url, stream=True)
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():
@@ -254,7 +250,7 @@ class Music(commands.Cog):
             for player in players:
                 playlist_id = count if count else "Playing"
 
-                if player.data["is_live"]:
+                if "is_live" in player.data and player.data["is_live"]:
                     duration = "LIVE"
 
                 else:
