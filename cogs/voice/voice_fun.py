@@ -9,13 +9,9 @@ import youtube_dl
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
 
-#   Import yaml configs
+#   Import configs
 voice_config = yaml.safe_load(open("cogs/voice/voice_config.yml"))
-
-#   droid_speak config
 droid_speak_config = voice_config["droid_speak"]
-
-#   YT stream options
 ytdl_format_options = voice_config["youtube_dl_config"]
 ffmpeg_options = voice_config["ffmpeg_config"]
 
@@ -26,15 +22,14 @@ ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
 #   Youtube download source class (with FFmpeg audio conversion)
-class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.1):
-        super().__init__(source, volume)
+class YTDLSource:
+    def __init__(self, data):
         self.data = data
         self.title = data.get('title')
-        self.url = data.get('url')
+        self.url = data.get('webpage_url')
 
     @classmethod
-    async def info_from_url(cls, url, *, loop=None, stream=False):
+    async def get_info(cls, url, *, loop=None, stream=False):
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
@@ -46,16 +41,23 @@ class YTDLSource(discord.PCMVolumeTransformer):
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream, process=False))
 
-        # TODO: Add support for playlists
-        if 'entries' in data:
-            # take first item from a playlist
-            data = data['entries'][0]
+        return cls(data)
 
-        filename = ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+    async def append_queue(self):
+        """Added YT sources to the existing playlist
+
+        :return:
+        """
+
+
+class BotAudio(discord.PCMVolumeTransformer, YTDLSource):
+    def __init__(self, source, *, data, volume=0.1):
+        super().__init__(source, volume)
+        self.data = data
+        self.title = data.get('title')
 
     @classmethod
-    async def data_from_url(cls, url, *, loop=None, stream=False):
+    def extract_yt_audio(cls, url, *, stream=False):
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
@@ -63,8 +65,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         :param stream: determine if URL is a stream
         :return:
         """
-        loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream, process=True))
+        data = ytdl.extract_info(url, download=not stream, process=True)
 
         # TODO: Add support for playlists
         if 'entries' in data:
