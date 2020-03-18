@@ -1,16 +1,19 @@
 import asyncio
 from emoji import demojize
+import googleapiclient.discovery
 import random
 import wave
 import discord
 import yaml
 import youtube_dl
 
+
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
 
 #   Import configs
 voice_config = yaml.safe_load(open("cogs/voice/voice_config.yml"))
+yt_api = yaml.safe_load(open("config.yml"))["youtube_data_api"]
 droid_speak_config = voice_config["droid_speak"]
 ytdl_format_options = voice_config["youtube_dl_config"]
 ffmpeg_options = voice_config["ffmpeg_config"]
@@ -19,6 +22,9 @@ ffmpeg_options = voice_config["ffmpeg_config"]
 random.seed(31)
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+youtube = googleapiclient.discovery.build(yt_api["api_service_name"],
+                                          yt_api["api_version"],
+                                          developerKey=yt_api["api_key"])
 
 
 #   Youtube download source class (with FFmpeg audio conversion)
