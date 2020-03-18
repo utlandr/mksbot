@@ -15,9 +15,6 @@ youtube_dl_config:
   'default_search': 'auto'
   'source_address': '0.0.0.0' 
   'buffer_size': '16K'
-#  'skip_download': True
-#  'simulate': True
-#  'extract_flat': True
 
 ffmpeg_config:
   'options': '-vn'
