@@ -127,7 +127,7 @@ class Music(commands.Cog):
 
         async with ctx.typing():
             info = await YTDLSource.get_info(url, loop=self.bot.loop, stream=True)
-            player = BotAudio.extract_yt_audio(info.url, stream=True)
+
 
         guild_id = ctx.message.guild.id
         if guild_id in self.queues and ctx.voice_client.is_playing():

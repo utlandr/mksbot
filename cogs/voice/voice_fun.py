@@ -6,6 +6,7 @@ import wave
 import discord
 import yaml
 import youtube_dl
+import re
 
 
 #   Suppress noise about console usage from errors
@@ -31,8 +32,8 @@ youtube = googleapiclient.discovery.build(yt_api["api_service_name"],
 class YTDLSource:
     def __init__(self, data):
         self.data = data
-        self.title = data.get('title')
-        self.url = data.get('webpage_url')
+        #self.title = data.get('title')
+        #self.url = data.get('webpage_url')
 
     @classmethod
     async def get_info(cls, url, *, loop=None, stream=False):
@@ -44,10 +45,31 @@ class YTDLSource:
         :return:
         """
 
-        loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream, process=False))
+        # Need to discern a search from an actual url
+        video_search = re.search(yt_api.get("video_regex"), url)
+        playlist_search = re.search(yt_api.get("playlist_regex"), url)
 
-        return cls(data)
+        if video_search or playlist_search:
+            v_part = {}
+            p_part = {}
+            if video_search:
+                request = youtube.videos().list(part="snippet,contentDetails",
+                                                id=video_search.group(1))
+                v_part = request.execute()
+            if playlist_search:
+                request = youtube.playlistItems().list(part="snippet,contentDetails",
+                                                       playlistId=playlist_search.group(1),
+                                                       maxResults=50)
+                p_part = request.execute()
+            data = {**v_part, **p_part}
+        else:
+            request = youtube.search().list(part="snippet",
+                                            q=url,
+                                            maxResults=1,
+                                            type="video")
+            data = request.execute()
+
+        return data
 
     async def append_queue(self):
         """Added YT sources to the existing playlist
