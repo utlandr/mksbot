@@ -1,6 +1,3 @@
-#   DISCLAIMER - Most of this cog is an adaptation of the 'basic-voice'
-#   cog provided in Rapptz discord.py repository (under the examples
-#   subdirectory)
 import discord
 from discord.ext import commands
 
@@ -90,7 +87,7 @@ class Music(commands.Cog):
             response = "Starting a new queue"
             await ctx.send(response)
             play_queue(self, ctx)
-    #   Download first from YT and play
+
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def yt(self, ctx, *, url):
@@ -124,21 +121,27 @@ class Music(commands.Cog):
         :param url: YouTube video URL
         :return:
         """
+        guild_id = ctx.message.guild.id
 
         async with ctx.typing():
-            info = await YTDLSource.get_info(url, loop=self.bot.loop, stream=True)
+            source = await YTDLSource.get_info(url, loop=self.bot.loop, stream=True)
+            if source.videos:
+                await add_queue(self, ctx, source)
+            else:
+                await ctx.send("Media not found.")
+
+        #await add_queue(ctx, source)
 
 
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues and ctx.voice_client.is_playing():
-
-            await add_queue(self, ctx, player)
-
-        else:
-            self.queues[guild_id] = [player]
-            response = "Starting a new queue"
-            await ctx.send(response)
-            play_queue(self, ctx)
+        # if guild_id in self.queues and ctx.voice_client.is_playing():
+        #
+        #     await add_queue(self, ctx, player)
+        #
+        # else:
+        #     self.queues[guild_id] = [player]
+        #     response = "Starting a new queue"
+        #     await ctx.send(response)
+        #     play_queue(self, ctx)
 
     #   Alter volume of audio
     @commands.command()

@@ -30,10 +30,12 @@ youtube = googleapiclient.discovery.build(yt_api["api_service_name"],
 
 #   Youtube download source class (with FFmpeg audio conversion)
 class YTDLSource:
-    def __init__(self, data):
+    def __init__(self, data, videos):
         self.data = data
-        #self.title = data.get('title')
+        self.request_type = data.get('kind')
+        self.request = data.get('')
         #self.url = data.get('webpage_url')
+        self.videos = videos
 
     @classmethod
     async def get_info(cls, url, *, loop=None, stream=False):
@@ -45,37 +47,61 @@ class YTDLSource:
         :return:
         """
 
-        # Need to discern a search from an actual url
+        data = {}
+        videos = []
+
+        # Identify video/playlist/search-query request.
         video_search = re.search(yt_api.get("video_regex"), url)
         playlist_search = re.search(yt_api.get("playlist_regex"), url)
 
-        if video_search or playlist_search:
-            v_part = {}
-            p_part = {}
-            if video_search:
-                request = youtube.videos().list(part="snippet,contentDetails",
-                                                id=video_search.group(1))
-                v_part = request.execute()
-            if playlist_search:
-                request = youtube.playlistItems().list(part="snippet,contentDetails",
-                                                       playlistId=playlist_search.group(1),
-                                                       maxResults=50)
-                p_part = request.execute()
-            data = {**v_part, **p_part}
+        if video_search:
+            request = youtube.videos().list(part="snippet,contentDetails",
+                                            id=video_search.group(1))
+        elif playlist_search:
+            request = youtube.playlistItems().list(part="snippet,contentDetails",
+                                                   playlistId=playlist_search.group(1),
+                                                   maxResults=50)
         else:
             request = youtube.search().list(part="snippet",
                                             q=url,
                                             maxResults=1,
                                             type="video")
-            data = request.execute()
+        response = request.execute()
+        data["request"] = url
+        data["request_type"] = response.get("kind")
 
-        return data
+        # Generate video information instances
+        for item in response.get("items"):
+            info = item
+            if item.get("kind") == "youtube#searchResult":
+                vid_request = youtube.videos().list(part="snippet, contentDetails",
+                                                    id=item.get("id").get("videoId"))
+                info = vid_request.execute()
+                videos.append(YTVideo(info.get("items")[0]))
+            elif item.get("kind") == "youtube#playlistItem":
+                info = youtube.videos().list(part="snippet,contentDetails",
+                                             id=item.get("contentDetails").get("videoId")).execute()
+                if info.get("items"):
+                    videos.append(YTVideo(info.get("items")[0]))
 
-    async def append_queue(self):
-        """Added YT sources to the existing playlist
+            else:
+                videos.append(YTVideo(info))
 
-        :return:
-        """
+        return cls(data, videos)
+
+    def generate_video_info(self):
+        return
+
+
+class YTVideo:
+    def __init__(self, entry: dict):
+        self.title = entry.get("snippet").get("title")
+        self.id = entry.get("id")
+        self.duration = entry.get("contentDetails").get("duration")
+        self.channel_name = entry.get("snippet").get("channelTitle")
+        self.channel_id = entry.get("snippet").get("channelId")
+        self.thumbnail_url = entry.get("snippet").get("thumbnails").get("default").get("url")
+        self.is_live = entry.get("liveBroadcastContent")
 
 
 class BotAudio(discord.PCMVolumeTransformer, YTDLSource):
@@ -129,17 +155,30 @@ async def bot_audible_update(ctx, state):
             await asyncio.sleep(1.7)
 
 
-async def add_queue(music, ctx, player):
-    """Add player to a music queue
+async def add_queue(music, ctx, source: YTDLSource):
+    """Add source to a music queue
 
-    :param music: The bot's Music cog instance
-    :param ctx: command invocation message context
-    :param player: the music player object
-    :return: None
+    :param music:
+    :param ctx:
+    :param source:
+    :return:
     """
     guild_id = ctx.message.guild.id
-    music.queues[guild_id].append(player)
-    await ctx.send(embed=create_queued_embed(player, len(music.queues[guild_id])))
+    if guild_id in music.queues:
+        music.queues[guild_id].extend(source.videos)
+
+    else:
+        music.queues[guild_id] = source.videos
+
+    if len(source.videos) == 1:
+        embed = single_queue_embed(source.videos[0], len(music.queues[guild_id]))
+        await ctx.send(embed=embed)
+    # else:
+    #     await ctx.send(embed=playlist_queue_embed(source.videos, len(music.queues[guild_id])))
+
+
+    return
+    #
 
 
 #   Queue player
@@ -153,7 +192,6 @@ def play_queue(music, ctx):
     guild_id = ctx.message.guild.id
     if check_queue(music.queues, ctx.message.guild.id):
         if len(music.queues[guild_id]):
-            # Now go get that data.
             player = music.queues[guild_id].pop(0)
             music.players[guild_id] = player
 
@@ -200,7 +238,8 @@ def format_duration(duration):
     :param duration: integer time in seconds
     :return: formatted minute:second time string
     """
-    formatted = "{:02d}:{:02d}".format(round(duration / 60), duration % 60)
+    t_int = re.search("(?:PT)([0-9]*)(?:H)([0-9]*)(?:M)([0-9]*)(?:S)", duration)
+    formatted = f"{t_int.group(1)}h {t_int.group(2)}m {t_int.group(3)}s"
 
     return formatted
 
@@ -247,18 +286,18 @@ def create_playing_embed(source, status):
     return embed_playing
 
 
-def create_queued_embed(source, position):
+def single_queue_embed(video: YTVideo, position):
     """Generate a queued audio embed
 
     :param source: The audio player source object
     :param position: THe position in the queue
     :return:
     """
-    if source.data["is_live"]:
+    if video.is_live:
         duration = "LIVE"
 
     else:
-        duration = format_duration(source.data["duration"])
+        duration = format_duration(video.duration)
 
     embed_queued = discord.Embed(title=" ",
                                  description=" ",
@@ -269,7 +308,7 @@ def create_queued_embed(source, position):
                             icon_url=voice_config["info"]["image"])
 
     embed_queued.add_field(name="Audio",
-                           value="[{}]({})".format(source.title, source.data["webpage_url"]),
+                           value=f"[{video.title}](https://www.youtube.com/watch?v={video.id})",
                            inline=False)
 
     embed_queued.add_field(name="Duration",
@@ -279,7 +318,7 @@ def create_queued_embed(source, position):
     embed_queued.add_field(name="Status",
                            value="Queued: {}".format(int_to_ordinal(position)))
 
-    embed_queued.set_thumbnail(url=source.data["thumbnail"])
+    embed_queued.set_thumbnail(url=video.thumbnail_url)
 
     return embed_queued
 
@@ -340,7 +379,7 @@ async def droid_speak_translate(ctx, phrase):
                 if c in droid_speak_config["alphabet"].keys():
                     infiles.append(droid_speak_config["alphabet"][c])
 
-                elif c is "space":
+                elif c == "space":
                     infiles.append(droid_speak_config["space"])
 
         infiles.append(droid_speak_config["space"])
