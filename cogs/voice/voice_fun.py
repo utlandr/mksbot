@@ -319,6 +319,11 @@ def single_queue_embed(video: YTVideo, position):
 
 
 def playlist_queue_embed(source: YTDLSource):
+    """Generates an Embed object for added playlists
+
+    :param source: the YTDLSource object containing playlist information
+    :return: Embed object
+    """
     playlist_embed = create_queue_embed(title="MksBot Player - Queued Playlist")
 
     playlist_embed.add_field(name="Playlist Added", value=source.data.get("request"))
