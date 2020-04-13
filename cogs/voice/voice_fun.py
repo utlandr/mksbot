@@ -34,11 +34,10 @@ class YTDLSource:
         self.data = data
         self.request_type = data.get('kind')
         self.request = data.get('')
-        #self.url = data.get('webpage_url')
         self.videos = videos
 
     @classmethod
-    async def get_info(cls, url, *, loop=None, stream=False):
+    async def get_info(cls, url):
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
@@ -88,9 +87,6 @@ class YTDLSource:
                 videos.append(YTVideo(info))
 
         return cls(data, videos)
-
-    def generate_video_info(self):
-        return
 
 
 class YTVideo:
@@ -173,12 +169,10 @@ async def add_queue(music, ctx, source: YTDLSource):
     if len(source.videos) == 1:
         embed = single_queue_embed(source.videos[0], len(music.queues[guild_id]))
         await ctx.send(embed=embed)
-    # else:
-    #     await ctx.send(embed=playlist_queue_embed(source.videos, len(music.queues[guild_id])))
-
-
+    else:
+        embed = playlist_queue_embed(source)
+        await ctx.send(embed=embed)
     return
-    #
 
 
 #   Queue player
@@ -216,18 +210,19 @@ def check_queue(c_queue, c_id):
         return False
 
 
-def create_queue_embed():
+def create_queue_embed(title):
     """Generates the base embed information for !queue command
 
+    :param title: embed title
     returns: a discord.Embed object that contains base queue infoqueued
     """
     playlist_embed = discord.Embed(title=" ",
-                                description=" ",
-                                color=0xeee657)
+                                   description=" ",
+                                   color=0xeee657)
 
-    playlist_embed.set_author(name="MksBot Player Playlist Queue",
-                           url=voice_config["info"]["source_code"],
-                           icon_url=voice_config["info"]["image"])
+    playlist_embed.set_author(name=title,
+                              url=voice_config["info"]["source_code"],
+                              icon_url=voice_config["info"]["image"])
 
     return playlist_embed
 
@@ -238,8 +233,8 @@ def format_duration(duration):
     :param duration: integer time in seconds
     :return: formatted minute:second time string
     """
-    #t_int = re.search("(?:PT)([0-9]*)(?:H)*([0-9]*)(?:M)([0-9]*)(?:S)", duration) # TODO: FIX THIS REGEX IT SUCKS
-    #formatted = f"{t_int.group(1)}h {t_int.group(2)}m {t_int.group(3)}s"
+    # t_int = re.search("(?:PT)([0-9]*)(?:H)*([0-9]*)(?:M)([0-9]*)(?:S)", duration) # TODO: FIX THIS REGEX IT SUCKS
+    # formatted = f"{t_int.group(1)}h {t_int.group(2)}m {t_int.group(3)}s"
 
     return duration
 
@@ -300,44 +295,35 @@ def single_queue_embed(video: YTVideo, position):
         duration = format_duration(video.duration)
 
     playlist_embedd = discord.Embed(title=" ",
-                                 description=" ",
-                                 color=0xeee657)
+                                    description=" ",
+                                    color=0xeee657)
 
     playlist_embedd.set_author(name="MksBot Player - Queued Audio",
-                            url=voice_config["info"]["source_code"],
-                            icon_url=voice_config["info"]["image"])
+                               url=voice_config["info"]["source_code"],
+                               icon_url=voice_config["info"]["image"])
 
     playlist_embedd.add_field(name="Audio",
-                           value=f"[{video.title}](https://www.youtube.com/watch?v={video.id})",
-                           inline=False)
+                              value=f"[{video.title}](https://www.youtube.com/watch?v={video.id})",
+                              inline=False)
 
     playlist_embedd.add_field(name="Duration",
-                           value=duration,
-                           inline=False)
+                              value=duration,
+                              inline=False)
 
     playlist_embedd.add_field(name="Status",
-                           value="Queued: {}".format(int_to_ordinal(position)))
+                              value="Queued: {}".format(int_to_ordinal(position)))
 
     playlist_embedd.set_thumbnail(url=video.thumbnail_url)
 
     return playlist_embedd
 
 
-def playlist_queue_embed(source: YTDLSource, position):
-    playlist_embed = create_queue_embed()
-    queue_string = ""
-    for video in source.videos:
-        playlist_id = position
-        duration = format_duration(video.duration)
-        queue_string += "{0}. {1} | [{2}](https://www.youtube.com/watch?v={3})\n\n".format(playlist_id,
-                                                                                           duration,
-                                                                                           video.title,
-                                                                                           video.id)
-        position += 1
+def playlist_queue_embed(source: YTDLSource):
+    playlist_embed = create_queue_embed(title="MksBot Player - Queued Playlist")
 
-    playlist_embed.add_field(name="Total Added", value=f"{len(source.videos)}")
+    playlist_embed.add_field(name="Playlist Added", value=source.data.get("request"))
     playlist_embed.add_field(name="\u200b", value="\u200b", inline=False)
-    playlist_embed.add_field(name="Queue", value=queue_string, inline=False)
+    playlist_embed.add_field(name="Tracks Added", value=f"{len(source.videos)}", inline=False)
 
     return playlist_embed
 

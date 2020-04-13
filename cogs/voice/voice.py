@@ -124,7 +124,7 @@ class Music(commands.Cog):
         guild_id = ctx.message.guild.id
 
         async with ctx.typing():
-            source = await YTDLSource.get_info(url, loop=self.bot.loop, stream=True)
+            source = await YTDLSource.get_info(url)
             if source.videos:
                 await add_queue(self, ctx, source)
             else:
