@@ -232,56 +232,59 @@ class Music(commands.Cog):
 
     #   View the queue of the existing playlist
     @commands.command()
-    async def queue(self, ctx):
+    async def queue(self, ctx, first=5):
         """
 
         :param ctx: command invocation message context
+        :param first: the number of audio sources to display in the embed
         :return:
         """
         guild_id = ctx.message.guild.id
-        players = self.queues[guild_id].copy()
+        queue_cp = self.queues[guild_id].copy()
+        total_duration = "TODO"
 
         if guild_id in self.queues:
             source = ctx.voice_client.source
 
-            embed_queue = create_queue_embed()
+            embed_queue = create_queue_embed(title="MksBot Player Queue")
 
             queue_string = ""
             count = 0
-            players.insert(0, source)
+            #players.insert(0, source)
 
-            for player in players:
+            for aud_source in queue_cp[:first]:
                 playlist_id = count if count else "Playing"
 
-                if "is_live" in player.data and player.data["is_live"]:
+                if aud_source.is_live:
                     duration = "LIVE"
 
                 else:
-                    duration = format_duration(player.data["duration"])
+                    duration = format_duration(aud_source.duration)
 
-                queue_string += "{0}. {1} | [{2}]({3})\n\n".format(playlist_id,
-                                                                   duration,
-                                                                   player.title,
-                                                                   player.data["webpage_url"])
+                queue_string += "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(playlist_id,
+                                                                                               duration,
+                                                                                               aud_source.title,
+                                                                                               aud_source.id)
                 count += 1
 
-            if source.data["is_live"]:
-                total_duration = "LIVE"
+            # TODO: FIX DURATION FORMATTING
+            # if source.data["is_live"]:
+            #     total_duration = "LIVE"
 
-            else:
-                total_duration = format_duration(sum([player.data["duration"]
-                                                      for player in players
-                                                      if not player.data["is_live"]]))
+            # else:
+            #     total_duration = format_duration(sum([player.data["duration"]
+            #                                           for player in players
+            #                                           if not player.data["is_live"]]))
 
             embed_queue.add_field(name="Total Runtime",
                                   value=total_duration)
 
             embed_queue.add_field(name="Total in Queue",
-                                  value=count)
+                                  value=len(queue_cp))
             embed_queue.add_field(name="\u200b",
                                   value="\u200b",
                                   inline=False)
-            embed_queue.add_field(name="Queue",
+            embed_queue.add_field(name=f"Queue (Displaying first {first})",
                                   value=queue_string,
                                   inline=False)
             await ctx.send(embed=embed_queue)
