@@ -6,7 +6,7 @@ youtube_dl_config:
   'format': 'bestaudio/best'
   'restrictfilenames': True
   'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s'
-  'noplaylist': False
+  'noplaylist': True
   'nocheckcertificate': True
   'ignoreerrors': True
   'logtostderr': False

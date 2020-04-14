@@ -130,18 +130,10 @@ class Music(commands.Cog):
             else:
                 await ctx.send("Media not found.")
 
-        #await add_queue(ctx, source)
-
-
-        # if guild_id in self.queues and ctx.voice_client.is_playing():
-        #
-        #     await add_queue(self, ctx, player)
-        #
-        # else:
-        #     self.queues[guild_id] = [player]
-        #     response = "Starting a new queue"
-        #     await ctx.send(response)
-        #     play_queue(self, ctx)
+        if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+            pass
+        else:
+            play_queue(self, ctx)
 
     #   Alter volume of audio
     @commands.command()

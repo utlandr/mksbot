@@ -99,8 +99,21 @@ class YTVideo:
         self.thumbnail_url = entry.get("snippet").get("thumbnails").get("default").get("url")
         self.is_live = entry.get("liveBroadcastContent")
 
+    def extract_audio(self):
+        """Retrieve AudioSource from YT info
 
-class BotAudio(discord.PCMVolumeTransformer, YTDLSource):
+        :return:
+        """
+        url = f"https://www.youtube.com/watch?v={self.id}"
+        data = ytdl.extract_info(url, download=False)
+
+        filename = data['url']
+
+        tmp = discord.FFmpegPCMAudio(filename, **ffmpeg_options)
+        return tmp
+
+
+class BotAudio(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.1):
         super().__init__(source, volume)
         self.data = data
@@ -177,24 +190,41 @@ async def add_queue(music, ctx, source: YTDLSource):
 
 #   Queue player
 def play_queue(music, ctx):
-    """Pops the first player item in the music queue and plays it
+    """Setup and manage the music player
 
     :param music: The bot's Music cog instance
     :param ctx: command invocation message context
     :return: None
     """
     guild_id = ctx.message.guild.id
-    if check_queue(music.queues, ctx.message.guild.id):
-        if len(music.queues[guild_id]):
-            player = music.queues[guild_id].pop(0)
-            music.players[guild_id] = player
 
-            ctx.voice_client.play(player, after=lambda e: print(e) if e else play_queue(music, ctx))
-            ctx.voice_client.source.volume = music.cur_volume
-            asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(player, "Playing")),
-                                             loop=music.bot.loop)
-        else:
-            pass
+    # Already initialised, dont worry
+    if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+        pass
+    else:  # Uninitialized
+        if check_queue(music.queues, ctx.message.guild.id): # Check queue
+            if len(music.queues[guild_id]):
+                source = music.queues[guild_id][0]
+                tmp = source.extract_audio()
+                audio = discord.PCMVolumeTransformer(tmp, volume=0.1)
+                music.players[guild_id] = audio
+                play_audio(music, audio, ctx)
+            else:
+                pass
+
+
+def play_audio(music, source, ctx):
+    ctx.voice_client.play(source, after=lambda e: print(e) if e else on_audio_complete(music, ctx))
+
+
+def on_audio_complete(music, ctx):
+    guild_id = ctx.message.guild.id
+    old_source = music.queues[guild_id].pop(0)
+
+    asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(old_source, "Playing")),
+                                     loop=music.bot.loop)
+
+    play_queue(music, ctx)
 
 
 def check_queue(c_queue, c_id):
@@ -239,18 +269,18 @@ def format_duration(duration):
     return duration
 
 
-def create_playing_embed(source, status):
+def create_playing_embed(source: YTVideo, status):
     """Generate a playing embed source
 
     :param source: The audio player source object
     :param status: Verbose description of the players status
     :return: a discord.Embed object containing player information
     """
-    if source.data["is_live"]:
+    if source.is_live:
         duration = "LIVE"
 
     else:
-        duration = format_duration(source.data["duration"])
+        duration = format_duration(source.duration)
 
     embed_playing = discord.Embed(
         title=" ",
@@ -264,7 +294,7 @@ def create_playing_embed(source, status):
 
     embed_playing.add_field(
         name="Audio",
-        value="[{}]({})".format(source.title, source.data["webpage_url"]),
+        value="[{}](https://www.youtube.com/watch?v={})".format(source.title, source.id),
         inline=False)
 
     embed_playing.add_field(
@@ -276,7 +306,7 @@ def create_playing_embed(source, status):
         name="Status",
         value=status)
 
-    embed_playing.set_thumbnail(url=source.data["thumbnail"])
+    embed_playing.set_thumbnail(url=source.thumbnail_url)
 
     return embed_playing
 
