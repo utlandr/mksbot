@@ -61,6 +61,11 @@ class Music(commands.Cog):
         """
 
         # await bot_audible_update(ctx, "Leaving")
+        guild_id = ctx.message.guild.id
+        if ctx.voice_client:
+            if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+                del self.queues[guild_id][1:]
+
         await ctx.voice_client.disconnect()
 
     #   Stream (no local storage) Youtube audio
