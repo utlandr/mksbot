@@ -233,13 +233,12 @@ def create_queue_embed(title):
 def format_duration(duration):
     """
 
-    :param duration: integer time in seconds
-    :return: formatted minute:second time string
+    :param duration: ISO8601 formatted time delta
+    :return: formatted 'h m s' time string
     """
-    # t_int = re.search("(?:PT)([0-9]*)(?:H)*([0-9]*)(?:M)([0-9]*)(?:S)", duration) # TODO: FIX THIS REGEX IT SUCKS
-    # formatted = f"{t_int.group(1)}h {t_int.group(2)}m {t_int.group(3)}s"
+    formatted = re.sub(r"\B([A-Z])", r"\1 ", duration.replace("PT", "")).lower()
 
-    return duration
+    return formatted
 
 
 def create_playing_embed(source: YTVideo, status):
