@@ -167,10 +167,10 @@ class Music(commands.Cog):
         :param ctx: command invocation message context
         :return:
         """
-
+        queue = self.queues.get(ctx.message.guild.id)
         if ctx.voice_client:
-            if ctx.voice_client.source:
-                source = ctx.voice_client.source
+            if queue:
+                source = queue[0]
                 status = "Paused" if ctx.voice_client.is_paused() else "Playing"
                 embed_playing = create_playing_embed(source, status)
                 await ctx.send(embed=embed_playing)
