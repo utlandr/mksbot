@@ -208,6 +208,8 @@ def play_queue(music, ctx):
                 tmp = source.extract_audio()
                 audio = discord.PCMVolumeTransformer(tmp, volume=0.1)
                 music.players[guild_id] = audio
+                asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(source, "Playing")),
+                                                 loop=music.bot.loop)
                 play_audio(music, audio, ctx)
             else:
                 pass
@@ -219,11 +221,7 @@ def play_audio(music, source, ctx):
 
 def on_audio_complete(music, ctx):
     guild_id = ctx.message.guild.id
-    old_source = music.queues[guild_id].pop(0)
-
-    asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(old_source, "Playing")),
-                                     loop=music.bot.loop)
-
+    music.queues[guild_id].pop(0)
     play_queue(music, ctx)
 
 

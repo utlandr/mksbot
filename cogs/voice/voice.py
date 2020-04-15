@@ -99,7 +99,7 @@ class Music(commands.Cog):
         """
 
         async with ctx.typing():
-            source = await YTDLSource.get_info(url, loop=self.bot.loop)
+            source = await YTDLSource.get_info(url)
             player = BotAudio.extract_yt_audio(source.url)
 
         guild_id = ctx.message.guild.id
@@ -195,14 +195,14 @@ class Music(commands.Cog):
         :param queue_id: 1-based queue index to remove player
         :return:
         """
+        guild_id = ctx.message.guild.id
         if queue_id:
-            guild_id = ctx.message.guild.id
             if queue_id[0] and queue_id[0] <= len(self.queues[guild_id]):
                 removed = self.queues[guild_id].pop(queue_id[0] - 1).title
                 await ctx.send("Removed:\t{}".format(removed))
         else:
 
-            player_title = ctx.voice_client.source.title
+            player_title = self.queues[guild_id][0].title
             await ctx.send("Skipping:\t{}".format(player_title))
             ctx.voice_client.stop()
 
