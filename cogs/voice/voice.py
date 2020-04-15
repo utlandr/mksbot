@@ -186,7 +186,6 @@ class Music(commands.Cog):
         """
         guild_id = ctx.message.guild.id
         queue_cp = self.queues[guild_id].copy()
-        total_duration = "TODO"
 
         if guild_id in self.queues:
             embed_queue = create_queue_embed(title="MksBot Player Queue")
@@ -207,18 +206,6 @@ class Music(commands.Cog):
                                                                                                aud_source.title,
                                                                                                aud_source.id)
                 count += 1
-
-            # TODO: FIX DURATION FORMATTING
-            # if source.data["is_live"]:
-            #     total_duration = "LIVE"
-
-            # else:
-            #     total_duration = format_duration(sum([player.data["duration"]
-            #                                           for player in players
-            #                                           if not player.data["is_live"]]))
-
-            embed_queue.add_field(name="Total Runtime",
-                                  value=total_duration)
 
             embed_queue.add_field(name="Total in Queue",
                                   value=len(queue_cp))
