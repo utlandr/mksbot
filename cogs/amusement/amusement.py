@@ -100,7 +100,7 @@ class Amusement(commands.Cog):
     @commands.command(pass_context=True)
     @commands.has_permissions(manage_messages=True)
     async def gather(self, ctx, *targets):
-        """Spams a provided set of user names to get on the fucking server
+        """Spams a provided set of user names to get on the server
 
         :param ctx: command invocation message context
         :param targets: A list of targets
