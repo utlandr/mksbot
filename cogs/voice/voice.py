@@ -63,7 +63,6 @@ class Music(commands.Cog):
         # await bot_audible_update(ctx, "Leaving")
         await ctx.voice_client.disconnect()
 
-
     #   Stream (no local storage) Youtube audio
     @commands.command()
     async def stream(self, ctx, *, url):
@@ -73,8 +72,6 @@ class Music(commands.Cog):
         :param url: YouTube video URL
         :return:
         """
-        guild_id = ctx.message.guild.id
-
         async with ctx.typing():
             source = await YTDLSource.get_info(url)
             if source.videos:
