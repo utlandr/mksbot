@@ -1,21 +1,21 @@
 import asyncio
 from emoji import demojize
+import googleapiclient.discovery
 import random
 import wave
 import discord
 import yaml
 import youtube_dl
+import re
+
 
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ''
 
-#   Import yaml configs
+#   Import configs
 voice_config = yaml.safe_load(open("cogs/voice/voice_config.yml"))
-
-#   droid_speak config
+yt_api = yaml.safe_load(open("config.yml"))["youtube_data_api"]
 droid_speak_config = voice_config["droid_speak"]
-
-#   YT stream options
 ytdl_format_options = voice_config["youtube_dl_config"]
 ffmpeg_options = voice_config["ffmpeg_config"]
 
@@ -23,18 +23,21 @@ ffmpeg_options = voice_config["ffmpeg_config"]
 random.seed(31)
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+youtube = googleapiclient.discovery.build(yt_api["api_service_name"],
+                                          yt_api["api_version"],
+                                          developerKey=yt_api["api_key"])
 
 
 #   Youtube download source class (with FFmpeg audio conversion)
-class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.1):
-        super().__init__(source, volume)
+class YTDLSource:
+    def __init__(self, data, videos):
         self.data = data
-        self.title = data.get('title')
-        self.url = data.get('url')
+        self.request_type = data.get('kind')
+        self.request = data.get('')
+        self.videos = videos
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def get_info(cls, url):
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
@@ -42,15 +45,72 @@ class YTDLSource(discord.PCMVolumeTransformer):
         :param stream: determine if URL is a stream
         :return:
         """
-        loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
-        if 'entries' in data:
-            # take first item from a playlist
-            data = data['entries'][0]
+        data = {}
+        videos = []
 
-        filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+        # Identify video/playlist/search-query request.
+        video_search = re.search(yt_api.get("video_regex"), url)
+        playlist_search = re.search(yt_api.get("playlist_regex"), url)
+
+        if video_search:
+            request = youtube.videos().list(part="snippet,contentDetails",
+                                            id=video_search.group(1))
+        elif playlist_search:
+            request = youtube.playlistItems().list(part="snippet,contentDetails",
+                                                   playlistId=playlist_search.group(1),
+                                                   maxResults=50)
+        else:
+            request = youtube.search().list(part="snippet",
+                                            q=url,
+                                            maxResults=1,
+                                            type="video")
+        response = request.execute()
+        data["request"] = url
+        data["request_type"] = response.get("kind")
+
+        # Generate video information instances
+        for item in response.get("items"):
+            info = item
+            if item.get("kind") == "youtube#searchResult":
+                vid_request = youtube.videos().list(part="snippet, contentDetails",
+                                                    id=item.get("id").get("videoId"))
+                info = vid_request.execute()
+                videos.append(YTVideo(info.get("items")[0]))
+            elif item.get("kind") == "youtube#playlistItem":
+                info = youtube.videos().list(part="snippet,contentDetails",
+                                             id=item.get("contentDetails").get("videoId")).execute()
+                if info.get("items"):
+                    videos.append(YTVideo(info.get("items")[0]))
+
+            else:
+                videos.append(YTVideo(info))
+
+        return cls(data, videos)
+
+
+class YTVideo:
+    def __init__(self, entry: dict):
+        self.title = entry.get("snippet").get("title")
+        self.id = entry.get("id")
+        self.duration = entry.get("contentDetails").get("duration")
+        self.channel_name = entry.get("snippet").get("channelTitle")
+        self.channel_id = entry.get("snippet").get("channelId")
+        self.thumbnail_url = entry.get("snippet").get("thumbnails").get("default").get("url")
+        self.is_live = entry.get("liveBroadcastContent")
+
+    def extract_audio(self):
+        """Retrieve AudioSource from YT info
+
+        :return:
+        """
+        url = f"https://www.youtube.com/watch?v={self.id}"
+        data = ytdl.extract_info(url, download=False)
+
+        filename = data['url']
+
+        tmp = discord.FFmpegPCMAudio(filename, **ffmpeg_options)
+        return tmp
 
 
 async def bot_audible_update(ctx, state):
@@ -78,39 +138,66 @@ async def bot_audible_update(ctx, state):
             await asyncio.sleep(1.7)
 
 
-async def add_queue(music, ctx, player):
-    """Add player to a music queue
+async def add_queue(music, ctx, source: YTDLSource):
+    """Add source to a music queue
 
-    :param music: The bot's Music cog instance
-    :param ctx: command invocation message context
-    :param player: the music player object
-    :return: None
+    :param music:
+    :param ctx:
+    :param source:
+    :return:
     """
     guild_id = ctx.message.guild.id
-    music.queues[guild_id].append(player)
-    await ctx.send(embed=create_queued_embed(player, len(music.queues[guild_id])))
+    if guild_id in music.queues:
+        music.queues[guild_id].extend(source.videos)
+
+    else:
+        music.queues[guild_id] = source.videos
+
+    if len(source.videos) == 1:
+        embed = single_queue_embed(source.videos[0], len(music.queues[guild_id]))
+        await ctx.send(embed=embed)
+    else:
+        embed = playlist_queue_embed(source)
+        await ctx.send(embed=embed)
+    return
 
 
 #   Queue player
 def play_queue(music, ctx):
-    """Pops the first player item in the music queue and plays it
+    """Setup and manage the music player
 
     :param music: The bot's Music cog instance
     :param ctx: command invocation message context
     :return: None
     """
     guild_id = ctx.message.guild.id
-    if check_queue(music.queues, ctx.message.guild.id):
-        if len(music.queues[guild_id]):
-            player = music.queues[guild_id].pop(0)
-            music.players[guild_id] = player
-
-            ctx.voice_client.play(player, after=lambda e: print(e) if e else play_queue(music, ctx))
-            ctx.voice_client.source.volume = music.cur_volume
-            asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(player, "Playing")),
-                                             loop=music.bot.loop)
-        else:
+    if ctx.voice_client:
+        if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
             pass
+        else:
+            if check_queue(music.queues, ctx.message.guild.id):
+                if len(music.queues[guild_id]):
+                    source = music.queues[guild_id][0]
+                    tmp = source.extract_audio()
+                    audio = discord.PCMVolumeTransformer(tmp, volume=music.cur_volume)
+                    music.players[guild_id] = audio
+                    asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(source, "Playing")),
+                                                     loop=music.bot.loop)
+                    play_audio(music, audio, ctx)
+                else:
+                    pass
+
+
+def play_audio(music, source, ctx):
+    ctx.voice_client.play(source, after=lambda e: print(e) if e else on_audio_complete(music, ctx))
+
+
+def on_audio_complete(music, ctx):
+    guild_id = ctx.message.guild.id
+    music.queues[guild_id].pop(0)
+
+    if ctx.voice_client:
+        play_queue(music, ctx)
 
 
 def check_queue(c_queue, c_id):
@@ -126,45 +213,46 @@ def check_queue(c_queue, c_id):
         return False
 
 
-def create_queue_embed():
+def create_queue_embed(title):
     """Generates the base embed information for !queue command
 
+    :param title: embed title
     returns: a discord.Embed object that contains base queue infoqueued
     """
-    embed_queue = discord.Embed(title=" ",
-                                description=" ",
-                                color=0xeee657)
+    playlist_embed = discord.Embed(title=" ",
+                                   description=" ",
+                                   color=0xeee657)
 
-    embed_queue.set_author(name="MksBot Player Playlist Queue",
-                           url=voice_config["info"]["source_code"],
-                           icon_url=voice_config["info"]["image"])
+    playlist_embed.set_author(name=title,
+                              url=voice_config["info"]["source_code"],
+                              icon_url=voice_config["info"]["image"])
 
-    return embed_queue
+    return playlist_embed
 
 
 def format_duration(duration):
     """
 
-    :param duration: integer time in seconds
-    :return: formatted minute:second time string
+    :param duration: ISO8601 formatted time delta
+    :return: formatted 'h m s' time string
     """
-    formatted = "{:02d}:{:02d}".format(round(duration / 60), duration % 60)
+    formatted = re.sub(r"\B([A-Z])", r"\1 ", duration.replace("PT", "")).lower()
 
     return formatted
 
 
-def create_playing_embed(source, status):
+def create_playing_embed(source: YTVideo, status):
     """Generate a playing embed source
 
     :param source: The audio player source object
     :param status: Verbose description of the players status
     :return: a discord.Embed object containing player information
     """
-    if source.data["is_live"]:
+    if source.is_live:
         duration = "LIVE"
 
     else:
-        duration = format_duration(source.data["duration"])
+        duration = format_duration(source.duration)
 
     embed_playing = discord.Embed(
         title=" ",
@@ -178,7 +266,7 @@ def create_playing_embed(source, status):
 
     embed_playing.add_field(
         name="Audio",
-        value="[{}]({})".format(source.title, source.data["webpage_url"]),
+        value="[{}](https://www.youtube.com/watch?v={})".format(source.title, source.id),
         inline=False)
 
     embed_playing.add_field(
@@ -190,46 +278,61 @@ def create_playing_embed(source, status):
         name="Status",
         value=status)
 
-    embed_playing.set_thumbnail(url=source.data["thumbnail"])
+    embed_playing.set_thumbnail(url=source.thumbnail_url)
 
     return embed_playing
 
 
-def create_queued_embed(source, position):
+def single_queue_embed(video: YTVideo, position):
     """Generate a queued audio embed
 
-    :param source: The audio player source object
+    :param video: YTVideo source
     :param position: THe position in the queue
     :return:
     """
-    if source.data["is_live"]:
+    if video.is_live:
         duration = "LIVE"
 
     else:
-        duration = format_duration(source.data["duration"])
+        duration = format_duration(video.duration)
 
-    embed_queued = discord.Embed(title=" ",
-                                 description=" ",
-                                 color=0xeee657)
+    playlist_embedd = discord.Embed(title=" ",
+                                    description=" ",
+                                    color=0xeee657)
 
-    embed_queued.set_author(name="MksBot Player - Queued Audio",
-                            url=voice_config["info"]["source_code"],
-                            icon_url=voice_config["info"]["image"])
+    playlist_embedd.set_author(name="MksBot Player - Queued Audio",
+                               url=voice_config["info"]["source_code"],
+                               icon_url=voice_config["info"]["image"])
 
-    embed_queued.add_field(name="Audio",
-                           value="[{}]({})".format(source.title, source.data["webpage_url"]),
-                           inline=False)
+    playlist_embedd.add_field(name="Audio",
+                              value=f"[{video.title}](https://www.youtube.com/watch?v={video.id})",
+                              inline=False)
 
-    embed_queued.add_field(name="Duration",
-                           value=duration,
-                           inline=False)
+    playlist_embedd.add_field(name="Duration",
+                              value=duration,
+                              inline=False)
 
-    embed_queued.add_field(name="Status",
-                           value="Queued: {}".format(int_to_ordinal(position)))
+    playlist_embedd.add_field(name="Status",
+                              value="Queued: {}".format(int_to_ordinal(position)))
 
-    embed_queued.set_thumbnail(url=source.data["thumbnail"])
+    playlist_embedd.set_thumbnail(url=video.thumbnail_url)
 
-    return embed_queued
+    return playlist_embedd
+
+
+def playlist_queue_embed(source: YTDLSource):
+    """Generates an Embed object for added playlists
+
+    :param source: the YTDLSource object containing playlist information
+    :return: Embed object
+    """
+    playlist_embed = create_queue_embed(title="MksBot Player - Queued Playlist")
+
+    playlist_embed.add_field(name="Playlist Added", value=source.data.get("request"))
+    playlist_embed.add_field(name="\u200b", value="\u200b", inline=False)
+    playlist_embed.add_field(name="Tracks Added", value=f"{len(source.videos)}", inline=False)
+
+    return playlist_embed
 
 
 def int_to_ordinal(num):
@@ -288,7 +391,7 @@ async def droid_speak_translate(ctx, phrase):
                 if c in droid_speak_config["alphabet"].keys():
                     infiles.append(droid_speak_config["alphabet"][c])
 
-                elif c is "space":
+                elif c == "space":
                     infiles.append(droid_speak_config["space"])
 
         infiles.append(droid_speak_config["space"])

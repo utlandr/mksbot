@@ -81,18 +81,6 @@ help:
       description: "Stream youtube audio (can supply a link or search term)"
       example: "!stream <YouTube URL>"
       options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
-
-    youtube:
-      invocation:  "!youtube"
-      description: "Same as !stream except save file locally (requires admin privileges)"
-      example: "!youtube  <Youtube URL>"
-      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
-
-    play:
-      invocation: "!play"
-      description: "Play locally saved audio file (must have admin privileges)"
-      example: "!play <filepath>"
-      options: "filepath    -    Local audio file location"
       
     speak:
       invocation: "!speak"
@@ -122,3 +110,10 @@ help:
       description: "List information about a user on this server"
       example: "!user <user | @user>"
       options: "user | @user   -    Can be either the name, server nickname, or @mention"
+
+    gather:
+      invocation: "!gather"
+      description: "When you need their attention"
+      example: "!gather <@user1 | user1> <@user2 | user2>"
+      options: "user | @user   -   Can be either the name, server nickname, or @mention\n\n
+                NOTE: nicknames are currently not supported"

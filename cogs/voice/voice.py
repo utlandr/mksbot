@@ -1,6 +1,3 @@
-#   DISCLAIMER - Most of this cog is an adaptation of the 'basic-voice'
-#   cog provided in Rapptz discord.py repository (under the examples
-#   subdirectory)
 import discord
 from discord.ext import commands
 
@@ -17,7 +14,7 @@ from cogs.voice.voice_fun import YTDLSource
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.def_volume = 0.1
+        self.def_volume = 0.05
         self.cur_volume = self.def_volume
         self.queues = {}
         self.players = {}
@@ -63,56 +60,12 @@ class Music(commands.Cog):
         """
 
         await bot_audible_update(ctx, "Leaving")
+        guild_id = ctx.message.guild.id
+        if ctx.voice_client:
+            if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+                del self.queues[guild_id][1:]
+
         await ctx.voice_client.disconnect()
-
-    #   Play audio locally stored
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def play(self, ctx, *, query):
-        """Plays a file from the local filesystem
-
-        :param ctx: command invocation message context
-        :param query: YouTube search query
-        :return: None
-        """
-        async with ctx.typing():
-            audio = discord.FFmpegPCMAudio(query)
-            player = discord.PCMVolumeTransformer(audio)
-            player.title = query.split("/")[-1]
-
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues and ctx.voice_client.is_playing():
-            await add_queue(self, ctx, player)
-
-        else:
-            self.queues[guild_id] = [player]
-            response = "Starting a new queue"
-            await ctx.send(response)
-            play_queue(self, ctx)
-
-    #   Download first from YT and play
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def yt(self, ctx, *, url):
-        """Plays from a url (almost anything youtube_dl supports)
-
-        :param ctx: command invocation message context
-        :param url: YouTube video url
-        :return: None
-        """
-
-        async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.bot.loop)
-
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues and ctx.voice_client.is_playing():
-            await add_queue(self, ctx, player)
-
-        else:
-            self.queues[guild_id] = [player]
-            response = "Starting a new queue"
-            await ctx.send(response)
-            play_queue(self, ctx)
 
     #   Stream (no local storage) Youtube audio
     @commands.command()
@@ -123,20 +76,16 @@ class Music(commands.Cog):
         :param url: YouTube video URL
         :return:
         """
-
         async with ctx.typing():
-            player = await YTDLSource.from_url(url,
-                                               loop=self.bot.loop,
-                                               stream=True)
+            source = await YTDLSource.get_info(url)
+            if source.videos:
+                await add_queue(self, ctx, source)
+            else:
+                await ctx.send("Media not found.")
 
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues and ctx.voice_client.is_playing():
-            await add_queue(self, ctx, player)
-
+        if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+            pass
         else:
-            self.queues[guild_id] = [player]
-            response = "Starting a new queue"
-            await ctx.send(response)
             play_queue(self, ctx)
 
     #   Alter volume of audio
@@ -199,14 +148,14 @@ class Music(commands.Cog):
         :param queue_id: 1-based queue index to remove player
         :return:
         """
+        guild_id = ctx.message.guild.id
         if queue_id:
-            guild_id = ctx.message.guild.id
             if queue_id[0] and queue_id[0] <= len(self.queues[guild_id]):
                 removed = self.queues[guild_id].pop(queue_id[0] - 1).title
                 await ctx.send("Removed:\t{}".format(removed))
         else:
 
-            player_title = ctx.voice_client.source.title
+            player_title = self.queues[guild_id][0].title
             await ctx.send("Skipping:\t{}".format(player_title))
             ctx.voice_client.stop()
 
@@ -218,66 +167,52 @@ class Music(commands.Cog):
         :param ctx: command invocation message context
         :return:
         """
-
+        queue = self.queues.get(ctx.message.guild.id)
         if ctx.voice_client:
-            if ctx.voice_client.source:
-                source = ctx.voice_client.source
+            if queue:
+                source = queue[0]
                 status = "Paused" if ctx.voice_client.is_paused() else "Playing"
                 embed_playing = create_playing_embed(source, status)
                 await ctx.send(embed=embed_playing)
 
     #   View the queue of the existing playlist
     @commands.command()
-    async def queue(self, ctx):
+    async def queue(self, ctx, first=5):
         """
 
         :param ctx: command invocation message context
+        :param first: the number of audio sources to display in the embed
         :return:
         """
         guild_id = ctx.message.guild.id
-        players = self.queues[guild_id].copy()
+        queue_cp = self.queues[guild_id].copy()
 
         if guild_id in self.queues:
-            source = ctx.voice_client.source
-
-            embed_queue = create_queue_embed()
-
+            embed_queue = create_queue_embed(title="MksBot Player Queue")
             queue_string = ""
             count = 0
-            players.insert(0, source)
 
-            for player in players:
+            for aud_source in queue_cp[:first]:
                 playlist_id = count if count else "Playing"
 
-                if player.data["is_live"]:
+                if aud_source.is_live:
                     duration = "LIVE"
 
                 else:
-                    duration = format_duration(player.data["duration"])
+                    duration = format_duration(aud_source.duration)
 
-                queue_string += "{0}. {1} | [{2}]({3})\n\n".format(playlist_id,
-                                                                   duration,
-                                                                   player.title,
-                                                                   player.data["webpage_url"])
+                queue_string += "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(playlist_id,
+                                                                                               duration,
+                                                                                               aud_source.title,
+                                                                                               aud_source.id)
                 count += 1
 
-            if source.data["is_live"]:
-                total_duration = "LIVE"
-
-            else:
-                total_duration = format_duration(sum([player.data["duration"]
-                                                      for player in players
-                                                      if not player.data["is_live"]]))
-
-            embed_queue.add_field(name="Total Runtime",
-                                  value=total_duration)
-
             embed_queue.add_field(name="Total in Queue",
-                                  value=count)
+                                  value=len(queue_cp))
             embed_queue.add_field(name="\u200b",
                                   value="\u200b",
                                   inline=False)
-            embed_queue.add_field(name="Queue",
+            embed_queue.add_field(name=f"Queue (Displaying first {first})",
                                   value=queue_string,
                                   inline=False)
             await ctx.send(embed=embed_queue)
@@ -292,8 +227,6 @@ class Music(commands.Cog):
         if not ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
             await droid_speak_translate(ctx, phrase)
 
-    @play.before_invoke
-    @yt.before_invoke
     @stream.before_invoke
     @speak.before_invoke
     async def ensure_voice(self, ctx):

@@ -98,9 +98,9 @@ class Amusement(commands.Cog):
             await ctx.send(response)
 
     @commands.command(pass_context=True)
-    @commands.has_role("ancient")
+    @commands.has_permissions(manage_messages=True)
     async def gather(self, ctx, *targets):
-        """Spams a provided set of user names to get on the fucking server
+        """Spams a provided set of user names to get on the server
 
         :param ctx: command invocation message context
         :param targets: A list of targets
@@ -120,20 +120,6 @@ class Amusement(commands.Cog):
 
         else:
             await ctx.send("No targets supplied")
-
-    # This routine performs checks every time a user's voice state changes (such as switching voice channels)
-    async def on_voice_state_update(self, member, before, after):
-        b_channel = before.channel
-        
-        #   Remove temporary voice channel "R.I.P."
-        if b_channel is not None:
-
-            if b_channel.name == "R.I.P.":
-                if not b_channel.members:
-                    await b_channel.delete(reason="Everyone is revived")
-        
-        else:
-            pass
 
 
 #   discord.py uses this function to integrate the class+methods into the bot.
