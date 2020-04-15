@@ -98,7 +98,7 @@ class Amusement(commands.Cog):
             await ctx.send(response)
 
     @commands.command(pass_context=True)
-    @commands.has_role("ancient")
+    @commands.has_permissions(manage_messages=True)
     async def gather(self, ctx, *targets):
         """Spams a provided set of user names to get on the fucking server
 
