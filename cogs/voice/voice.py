@@ -9,7 +9,6 @@ from cogs.voice.voice_fun import format_duration
 from cogs.voice.voice_fun import play_queue
 from cogs.voice.voice_fun import add_queue
 from cogs.voice.voice_fun import YTDLSource
-from cogs.voice.voice_fun import BotAudio
 
 
 class Music(commands.Cog):
