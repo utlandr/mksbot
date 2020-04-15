@@ -197,21 +197,21 @@ def play_queue(music, ctx):
     :return: None
     """
     guild_id = ctx.message.guild.id
-
-    if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
-        pass
-    else:
-        if check_queue(music.queues, ctx.message.guild.id):
-            if len(music.queues[guild_id]):
-                source = music.queues[guild_id][0]
-                tmp = source.extract_audio()
-                audio = discord.PCMVolumeTransformer(tmp, volume=0.1)
-                music.players[guild_id] = audio
-                asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(source, "Playing")),
-                                                 loop=music.bot.loop)
-                play_audio(music, audio, ctx)
-            else:
-                pass
+    if ctx.voice_client:
+        if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+            pass
+        else:
+            if check_queue(music.queues, ctx.message.guild.id):
+                if len(music.queues[guild_id]):
+                    source = music.queues[guild_id][0]
+                    tmp = source.extract_audio()
+                    audio = discord.PCMVolumeTransformer(tmp, volume=music.cur_volume)
+                    music.players[guild_id] = audio
+                    asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(source, "Playing")),
+                                                     loop=music.bot.loop)
+                    play_audio(music, audio, ctx)
+                else:
+                    pass
 
 
 def play_audio(music, source, ctx):
@@ -221,7 +221,9 @@ def play_audio(music, source, ctx):
 def on_audio_complete(music, ctx):
     guild_id = ctx.message.guild.id
     music.queues[guild_id].pop(0)
-    play_queue(music, ctx)
+
+    if ctx.voice_client:
+        play_queue(music, ctx)
 
 
 def check_queue(c_queue, c_id):
