@@ -113,32 +113,6 @@ class YTVideo:
         return tmp
 
 
-class BotAudio(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.1):
-        super().__init__(source, volume)
-        self.data = data
-        self.title = data.get('title')
-
-    @classmethod
-    def extract_yt_audio(cls, url, *, stream=False):
-        """Stream audio from a supplied url instead of searching
-
-        :param url: supplied URL
-        :param loop: video looping
-        :param stream: determine if URL is a stream
-        :return:
-        """
-        data = ytdl.extract_info(url, download=not stream, process=True)
-
-        # TODO: Add support for playlists
-        if 'entries' in data:
-            # take first item from a playlist
-            data = data['entries'][0]
-
-        filename = data['url'] if stream else ytdl.prepare_filename(data)
-        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
-
-
 async def bot_audible_update(ctx, state):
     """Play update audio when leaving/entering channels
 
