@@ -115,4 +115,5 @@ help:
       invocation: "!gather"
       description: "When you need their attention"
       example: "!gather <@user1 | user1> <@user2 | user2>"
-      options: "user | @user   -   Can be either the name, server nickname, or @mention"
+      options: "user | @user   -   Can be either the name, server nickname, or @mention\n\n
+                NOTE: nicknames are currently not supported"
