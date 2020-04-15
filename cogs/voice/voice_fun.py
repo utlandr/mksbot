@@ -198,11 +198,10 @@ def play_queue(music, ctx):
     """
     guild_id = ctx.message.guild.id
 
-    # Already initialised, dont worry
     if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
         pass
-    else:  # Uninitialized
-        if check_queue(music.queues, ctx.message.guild.id): # Check queue
+    else:
+        if check_queue(music.queues, ctx.message.guild.id):
             if len(music.queues[guild_id]):
                 source = music.queues[guild_id][0]
                 tmp = source.extract_audio()

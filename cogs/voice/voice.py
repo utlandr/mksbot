@@ -63,54 +63,6 @@ class Music(commands.Cog):
         # await bot_audible_update(ctx, "Leaving")
         await ctx.voice_client.disconnect()
 
-    #   Play audio locally stored
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def play(self, ctx, *, query):
-        """Plays a file from the local filesystem
-
-        :param ctx: command invocation message context
-        :param query: YouTube search query
-        :return: None
-        """
-        async with ctx.typing():
-            audio = discord.FFmpegPCMAudio(query)
-            player = discord.PCMVolumeTransformer(audio)
-            player.title = query.split("/")[-1]
-
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues and ctx.voice_client.is_playing():
-            await add_queue(self, ctx, player)
-
-        else:
-            self.queues[guild_id] = [player]
-            response = "Starting a new queue"
-            await ctx.send(response)
-            play_queue(self, ctx)
-
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def yt(self, ctx, *, url):
-        """Plays from a url (almost anything youtube_dl supports)
-
-        :param ctx: command invocation message context
-        :param url: YouTube video url
-        :return: None
-        """
-
-        async with ctx.typing():
-            source = await YTDLSource.get_info(url)
-            player = BotAudio.extract_yt_audio(source.url)
-
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues and ctx.voice_client.is_playing():
-            await add_queue(self, ctx, player)
-
-        else:
-            self.queues[guild_id] = [player]
-            response = "Starting a new queue"
-            await ctx.send(response)
-            play_queue(self, ctx)
 
     #   Stream (no local storage) Youtube audio
     @commands.command()
@@ -236,13 +188,9 @@ class Music(commands.Cog):
         total_duration = "TODO"
 
         if guild_id in self.queues:
-            source = ctx.voice_client.source
-
             embed_queue = create_queue_embed(title="MksBot Player Queue")
-
             queue_string = ""
             count = 0
-            #players.insert(0, source)
 
             for aud_source in queue_cp[:first]:
                 playlist_id = count if count else "Playing"
@@ -291,8 +239,6 @@ class Music(commands.Cog):
         if not ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
             await droid_speak_translate(ctx, phrase)
 
-    @play.before_invoke
-    @yt.before_invoke
     @stream.before_invoke
     @speak.before_invoke
     async def ensure_voice(self, ctx):

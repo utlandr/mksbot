@@ -81,18 +81,6 @@ help:
       description: "Stream youtube audio (can supply a link or search term)"
       example: "!stream <YouTube URL>"
       options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
-
-    youtube:
-      invocation:  "!youtube"
-      description: "Same as !stream except save file locally (requires admin privileges)"
-      example: "!youtube  <Youtube URL>"
-      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
-
-    play:
-      invocation: "!play"
-      description: "Play locally saved audio file (must have admin privileges)"
-      example: "!play <filepath>"
-      options: "filepath    -    Local audio file location"
       
     speak:
       invocation: "!speak"
