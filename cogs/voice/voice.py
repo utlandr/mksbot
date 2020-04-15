@@ -14,7 +14,7 @@ from cogs.voice.voice_fun import YTDLSource
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.def_volume = 0.1
+        self.def_volume = 0.05
         self.cur_volume = self.def_volume
         self.queues = {}
         self.players = {}
