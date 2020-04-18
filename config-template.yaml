@@ -61,8 +61,9 @@ help:
     skip:
       invocation: "!skip"
       description: "Skip current audio"
-      example: "!skip <queue_id>"
-      options: "queue_id    -    The audio position in the queue (use !queue to view all ids. Defaults to audio currently playing"
+      example: "!skip <queue_id | 'all'>"
+      options: "queue_id    -    The audio position in the queue (use !queue to view all ids. Defaults to skipping audio currently playing.\n
+                                 Alternatively use 'all' to remove the playlist."
 
     player:
       invocation: "!player"

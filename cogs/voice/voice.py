@@ -62,8 +62,7 @@ class Music(commands.Cog):
         await bot_audible_update(ctx, "Leaving")
         guild_id = ctx.message.guild.id
         if ctx.voice_client:
-            if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
-                del self.queues[guild_id][1:]
+            del self.queues[guild_id][:]
 
         await ctx.voice_client.disconnect()
 
@@ -141,8 +140,8 @@ class Music(commands.Cog):
 
     #   Skip current song and play the next one
     @commands.command()
-    async def skip(self, ctx, *queue_id: int):
-        """Skips current player and player the next player in the queue
+    async def skip(self, ctx, *queue_id):
+        """Skips current player and plays the next player in the queue
 
         :param ctx: command invocation message context
         :param queue_id: 1-based queue index to remove player
@@ -150,8 +149,12 @@ class Music(commands.Cog):
         """
         guild_id = ctx.message.guild.id
         if queue_id:
-            if queue_id[0] and queue_id[0] <= len(self.queues[guild_id]):
-                removed = self.queues[guild_id].pop(queue_id[0] - 1).title
+            if queue_id[0] == "all":
+                del self.queues[guild_id][:]
+                ctx.voice_client.stop()
+                await ctx.send("Queue has been emptied.")
+            elif int(queue_id[0]) and int(queue_id[0]) <= len(self.queues[guild_id]):
+                removed = self.queues[guild_id].pop(int(queue_id[0]) - 1).title
                 await ctx.send("Removed:\t{}".format(removed))
         else:
 
