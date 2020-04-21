@@ -105,6 +105,7 @@ class YTVideo:
         :return:
         """
         url = f"https://www.youtube.com/watch?v={self.id}"
+        ytdl.cache.remove()
         data = ytdl.extract_info(url, download=False)
 
         filename = data['url']
