@@ -61,8 +61,8 @@ class Music(commands.Cog):
 
         await bot_audible_update(ctx, "Leaving")
         guild_id = ctx.message.guild.id
-        if ctx.voice_client:
-            del self.queues[guild_id][:]
+        if guild_id in self.queues:
+            del self.queues.get(guild_id)[:]
 
         await ctx.voice_client.disconnect()
 
