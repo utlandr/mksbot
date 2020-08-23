@@ -2,17 +2,14 @@ import logging
 import sys
 import traceback
 import yaml
+import discord
 
 from cogs.reddit.reddit import Reddit
 from cogs.amusement.amusement import Amusement
 from cogs.voice.voice import Music
 from discord.ext import commands
 
-
-from base_functions import *
-
-#if not discord.opus.is_loaded():
-#    discord.opus.load_opus('opus')
+import base_functions as mks
 
 #   Import config data and extensions (cogs)
 config = yaml.safe_load(open("./config.yml"))
@@ -23,7 +20,7 @@ client = discord.Client()
 cogs = [Reddit(bot),
         Amusement(bot),
         Music(bot)]
-        
+
 if __name__ == '__main__':
     for extension in cogs:
         try:
@@ -68,7 +65,7 @@ async def info(ctx):
 async def user(ctx, *, member: discord.Member):
     """Get user information
     """
-    await ctx.send(embed=user_info_embed(member))
+    await ctx.send(embed=mks.user_info_embed(member))
 
 
 @bot.command(pass_context=True)
@@ -89,7 +86,7 @@ async def rm(ctx, *number):
             if n > 0:
                 limit = n
 
-        except ValueError as e:
+        except ValueError:
             if number[0] == "purge":
                 limit = None
 
