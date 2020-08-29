@@ -132,8 +132,8 @@ async def help(ctx, *args):
         await ctx.send(embed=embed)
 
     else:
-        c_group = []
-        just_c = []
+        c_group = [group for _ in config["help"] for group in config["help"]]
+        just_c = [c in group for group in config["help"] for c in config["help"][group]]
         command = args[0].replace("!", "")
         [[c_group.append(group) for c in config["help"][group]] for group in config["help"]]
         [[just_c.append(c) for c in config["help"][group]] for group in config["help"]]
