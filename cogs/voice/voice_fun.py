@@ -1,4 +1,6 @@
 import asyncio
+
+from discord import Message
 from emoji import demojize
 import googleapiclient.discovery
 import random
@@ -41,8 +43,6 @@ class YTDLSource:
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
-        :param loop: video looping
-        :param stream: determine if URL is a stream
         :return:
         """
 
@@ -156,11 +156,19 @@ async def add_queue(music, ctx, source: YTDLSource):
 
     if len(source.videos) == 1:
         embed = single_queue_embed(source.videos[0], len(music.queues[guild_id]))
-        await ctx.send(embed=embed)
+        ret_msg: Message = await ctx.send(embed=embed)
+        await ret_msg.delete(delay=10)
     else:
         embed = playlist_queue_embed(source)
-        await ctx.send(embed=embed)
+        ret_msg: Message = await ctx.send(embed=embed)
+        await ret_msg.delete(delay=10)
     return
+
+
+async def setup_player(ctx, source):
+    msg = await ctx.send(embed=create_playing_embed(source, "Playing"))
+    await msg.add_reaction("⏯️")
+    await msg.add_reaction("⏭️")
 
 
 #   Queue player
@@ -182,8 +190,7 @@ def play_queue(music, ctx):
                     tmp = source.extract_audio()
                     audio = discord.PCMVolumeTransformer(tmp, volume=music.cur_volume)
                     music.players[guild_id] = audio
-                    asyncio.run_coroutine_threadsafe(ctx.send(embed=create_playing_embed(source, "Playing")),
-                                                     loop=music.bot.loop)
+                    asyncio.run_coroutine_threadsafe(setup_player(ctx, source), loop=music.bot.loop)
                     play_audio(music, audio, ctx)
                 else:
                     pass
