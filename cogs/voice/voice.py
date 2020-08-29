@@ -1,14 +1,16 @@
 import discord
+
+from discord import Reaction, User, Message
 from discord.ext import commands
 
 from cogs.voice.voice_fun import bot_audible_update
-from cogs.voice.voice_fun import create_playing_embed
 from cogs.voice.voice_fun import create_queue_embed
 from cogs.voice.voice_fun import droid_speak_translate
 from cogs.voice.voice_fun import format_duration
 from cogs.voice.voice_fun import play_queue
 from cogs.voice.voice_fun import add_queue
 from cogs.voice.voice_fun import YTDLSource
+from cogs.voice.voice_fun import setup_player
 
 
 class Music(commands.Cog):
@@ -116,6 +118,31 @@ class Music(commands.Cog):
 
         return await ctx.send("Current volume is {}%".format(bot_volume))
 
+    @commands.command()
+    async def flick(self, ctx):
+        """Switch between paused and playing states
+
+        :param ctx: command invocation message context
+        :return: None
+        """
+        if ctx.voice_client.is_playing():
+            ctx.voice_client.pause()
+        elif ctx.voice_client.is_paused():
+            ctx.voice_client.resume()
+
+    @classmethod
+    async def _react_flick(cls, reaction):
+        """Switch between paused and playing states
+
+        :param reaction: Reaction object invoking flick action
+        :return: None
+        """
+        guild = reaction.message.guild
+        if guild.voice_client.is_playing():
+            guild.voice_client.pause()
+        elif guild.voice_client.is_paused():
+            guild.voice_client.resume()
+
     #   Pause current audio stream
     @commands.command()
     async def pause(self, ctx):
@@ -162,6 +189,12 @@ class Music(commands.Cog):
             await ctx.send("Skipping:\t{}".format(player_title))
             ctx.voice_client.stop()
 
+    async def _react_skip(self, reaction):
+        guild_id = reaction.message.guild.id
+        player_title = self.queues[guild_id][0].title
+        await reaction.message.channel.send("Skipping:\t{}".format(player_title))
+        reaction.message.guild.voice_client.stop()
+
     #   Display information about current audio being played
     @commands.command()
     async def player(self, ctx):
@@ -175,8 +208,7 @@ class Music(commands.Cog):
             if queue:
                 source = queue[0]
                 status = "Paused" if ctx.voice_client.is_paused() else "Playing"
-                embed_playing = create_playing_embed(source, status)
-                await ctx.send(embed=embed_playing)
+                await setup_player(ctx, source)
 
     #   View the queue of the existing playlist
     @commands.command()
@@ -218,7 +250,8 @@ class Music(commands.Cog):
             embed_queue.add_field(name=f"Queue (Displaying first {first})",
                                   value=queue_string,
                                   inline=False)
-            await ctx.send(embed=embed_queue)
+            ret_msg: Message = await ctx.send(embed=embed_queue)
+            await ret_msg.delete(delay=10)
 
     @commands.command()
     async def speak(self, ctx, *phrase: str):
@@ -229,6 +262,39 @@ class Music(commands.Cog):
         """
         if not ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
             await droid_speak_translate(ctx, phrase)
+
+    @staticmethod
+    def _is_not_bot(user):
+        return not user.bot
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction: Reaction, user: User) -> None:
+        """Listen for all added reactions
+
+        :param reaction: Reaction that was submitted by a User
+        :param user: The User that submitted the Reaction
+        :return:
+        """
+        if self._is_not_bot(user):
+            await self.manage_music(reaction, user)
+
+    async def manage_music(self, reaction: Reaction, user: User) -> None:
+        """For a given Reaction, determine if music player needs to be managed
+
+        :param reaction: a Reaction object
+        :param user: the User who sent the Reaction
+        :return:
+        """
+        if reaction.message.author.bot:  # This loosely rules out reactions to non-bot messages messages.
+            if str(reaction) == "⏭️":
+                await self._react_skip(reaction)
+                await reaction.message.clear_reactions()
+                await reaction.message.delete(delay=10)
+            elif str(reaction) == "⏯️":
+                await self._react_flick(reaction)
+                await reaction.remove(user)
+            else:
+                pass
 
     @stream.before_invoke
     @speak.before_invoke
