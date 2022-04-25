@@ -15,4 +15,5 @@ audio/mp3
 
 #   Ignore files
 audio/output/sounds.wav
+.envrc
 
