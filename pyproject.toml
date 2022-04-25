@@ -1,0 +1,11 @@
+[tool.black]
+target-version = ['py310']
+line-length = 120
+include = '\.pyi?$'
+
+[tool.isort]
+line-length = 120
+include = '\.pyi?$'
+profile = 'black'
+src_paths = ['mksbot']
+
