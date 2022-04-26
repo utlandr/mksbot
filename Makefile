@@ -1,4 +1,4 @@
-.PHONY: test dev-venv env mypy black pytest flake8 clean
+.PHONY: test dev-venv env mypy black pytest flake8 clean isort
 
 SRC := mksbot
 VENV := .venv
@@ -19,6 +19,9 @@ flake8:
 
 black:
 	-pipenv run black --check $(SRC)
+
+isort:
+	-pipenv run isort --check . 
 
 clean:
 	pipenv clean

@@ -4,8 +4,7 @@ line-length = 120
 include = '\.pyi?$'
 
 [tool.isort]
-line-length = 120
-include = '\.pyi?$'
 profile = 'black'
+line_length = 120
 src_paths = ['mksbot']
 
