@@ -6,22 +6,22 @@ VENV := .venv
 dev-venv: $(PIPENV_FILES)
 	pipenv install --dev
 
-test: clean black mypy flake8 pytest
+test: black mypy flake8 pytest
 
 pytest:
-	-pipenv run pytest mksbot
+	-pytest $(SRC)
 
 mypy:
-	-pipenv run mypy $(SRC)
+	-mypy $(SRC)
 
 flake8:
-	-pipenv run flake8 --statistics $(SRC)
+	-flake8 --statistics $(SRC)
 
 black:
-	-pipenv run black --check $(SRC)
+	-black --check $(SRC)
 
 isort:
-	-pipenv run isort --check . 
+	-isort --check $(SRC)
 
 clean:
 	pipenv clean
