@@ -1,5 +1,4 @@
 #   Ignore file formats
-*.yml
 *.log
 *.exe
 
@@ -14,5 +13,7 @@ audio/raw
 audio/mp3
 
 #   Ignore files
+config.yml
 audio/output/sounds.wav
+.envrc
 

@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[requires]
+python_version = "3.10"
+
+[packages]
+"discord.py[voice]" = "*"
+discord = "*"
+emoji = "*"
+google_api_python_client = "*"
+praw = "*"
+PyYAML = "*"
+requests = "*"
+youtube_dl = "*"
+
+[dev-packages]
+black = "*"
+mypy = "*"
+flake8 = "*"
+pytest = "*"
+coverage = "*"
+isort = "*"

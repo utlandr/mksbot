@@ -1,0 +1,9 @@
+# files
+.envrc
+config-template.yaml
+README.md
+Dockerfile
+
+# directories
+docs
+
