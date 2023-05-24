@@ -1,12 +1,13 @@
+---
 bot:
   title: <Bot Name>
   description: <Bot Description (shows on discord)>
   token: <Discord Bot Token>
   email: <Contact Email>
   source_code: https://github.com/utlandr/mksbot
-  log_level:  <debug|warning|info>
+  log_level: <debug|warning|info>
   log_path: <Where to save log file>
-    
+
 reddit:
   id: <Reddit app ID>
   secret: <Reddit app secret>
@@ -25,8 +26,10 @@ help:
     summon:
       invocation: "!summon"
       description: "Summon MksBot to current or specified voice channel"
-      example: "!summon <V.C.>"
-      options: "V.C.    -    Name of the voice channel to move MksBot into. If left empty channel defaults to users current channel"
+      example: "!summon <voice_channel>"
+      options: |
+        voice_channel    Name of the voice channel to move MksBot into.
+                         Defaults to the user's current channel.
 
     leave:
       invocation: "!leave"
@@ -36,15 +39,17 @@ help:
 
     roulette:
       invocation: "!roulette"
-      description: "Kick users from the current discord voice channel... Russian Roulette style"
+      description: "Kick users from the current discord voice channel... Russian Roulette style."
       example: "!roulette <no. kill> <no. chambers>"
-      options: "no. kill    -    Number of members to kill\nno. chambers    -    no of chambers in the game"
+      options: |
+        "bullets     Number of bullets. Default is 1.
+         chambers    Number of chambers. Default is 6."
 
     volume:
       invocation: "!volume"
       description: "Adjust the volume of the bot"
-      example: "!volume <val>"
-      options: "    -    set volume to a value between 0-100"
+      example: "!volume <value>"
+      options: "value    -    set volume to a value between 0-100"
 
     pause:
       invocation: "!pause"
@@ -62,8 +67,10 @@ help:
       invocation: "!skip"
       description: "Skip current audio"
       example: "!skip <queue_id | 'all'>"
-      options: "queue_id    -    The audio position in the queue (use !queue to view all ids. Defaults to skipping audio currently playing.\n
-                                 Alternatively use 'all' to remove the playlist."
+      options: |
+        "queue_id    The audio position in the queue (use !queue to see available IDs).
+                     Default is 0 (currently playing).
+                     Alternatively use 'all' to empty the entire playlist."
 
     player:
       invocation: "!player"
@@ -80,18 +87,22 @@ help:
     stream:
       invocation: "!stream"
       description: "Stream youtube audio (can supply a link or search term)"
-      example: "!stream <YouTube URL>"
-      options: "URL    -    YouTube video link (cannot be a stream/radio or a playlist)"
-      
+      example: "!stream <URL>"
+      options: "URL    YouTube video link (cannot be a stream/radio or a playlist)"
+
     speak:
       invocation: "!speak"
       description: "MksBot will translate text and speak Droid Speak from Star Wars"
       example: "!speak <sentence|keyword|emoji>"
-      options: "sentence    -    Text for MksBot to translate (500 characters max). This is done randomly\n\n
-                keyword    -    Keywords that evoke a special Droidspeak phrase:\n
-                                     -    eureka, grin, grinning, happy, laughing, surprise, surprise2, smiley, smiley2, sad, thinking, worried, zap\n\n
-                emoji    -    Emojies that trigger a special Droidspeak response:\n
-                                  -    :worried:, :open_mouth:, :nerd:, :grin:, :grinning:, :laughing:, :zap:, :smiley:, :thinking:, :frowning:"
+      options: |
+        "sentence    Text for MksBot to translate (500 characters max)
+
+         keyword     eureka, grin, grinning, happy, laughing, surprise, surprise2,
+                     smiley, smiley2, sad, thinking, worried, zap
+
+         emoji       :worried:, :open_mouth:, :nerd:, :grin:, :grinning:, :laughing:,
+                     :zap:, :smiley:, :thinking:, :frowning:"
+
   Media and Random:
     donger:
       invocation: "!donger"
@@ -103,7 +114,7 @@ help:
       invocation: "!reddit"
       description: "Retrieve a post from a subreddit"
       example: "!reddit <subreddit>"
-      options: "subreddit    -    subreddit to scrape hot post. Defaults to r/all"
+      options: "subreddit    Subreddit to scrape hot post. Defaults to r/all"
 
   Management:
     user:
@@ -116,5 +127,6 @@ help:
       invocation: "!gather"
       description: "When you need their attention"
       example: "!gather <@user1 | user1> <@user2 | user2>"
-      options: "user | @user   -   Can be either the name, server nickname, or @mention\n\n
-                NOTE: nicknames are currently not supported"
+      options: |
+        "user    @userCan be either the name, server nickname, or @mention
+                 NOTE: nicknames are currently not supported"
