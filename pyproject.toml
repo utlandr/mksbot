@@ -1,11 +1,14 @@
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
-build-backend = "setuptools.build_meta"
+requires = ["hatch"]
+build-backend = "hatchling.build"
 
 [project]
 name= "mksbot"
-authors = [{name="utlandr"}]
+authors = [
+  { name="utlandr", email="rlpp.bell@gmail.com" },
+]
 description = "Custom Discord Bot"
+readme =  "README.md"
 dynamic = ["version"]
 requires-python = ">=3.11"
 dependencies = [
@@ -18,12 +21,8 @@ dependencies = [
     "youtube-dl",
 ]
 
-[tool.setuptools_scm]
-
 [project.scripts]
 start-mksbot = "mksbot.main:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-[tool.setuptools.package-data]
-mksbot = ["py.typed"]
+[tool.hatch.version]
+path = "src/mksbot/__about__.py"
