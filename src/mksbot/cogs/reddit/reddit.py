@@ -1,10 +1,9 @@
 import asyncio
-import yaml
 
+import yaml
 from discord.ext import commands
-from cogs.reddit.reddit_fun import clear_hidden
-from cogs.reddit.reddit_fun import reddit_embed
-from cogs.reddit.reddit_fun import reddit_post
+from mksbot.cogs.reddit.reddit_fun import (clear_hidden, reddit_embed,
+                                           reddit_post)
 
 
 #   Reddit cog for all things Reddit
@@ -34,7 +33,7 @@ class Reddit(commands.Cog):
                 if tack_on.startswith("https://streamable"):
                     await asyncio.sleep(5)
 
-                await ctx.send(embed=reddit_response)    
+                await ctx.send(embed=reddit_response)
                 await ctx.send(tack_on)
 
             else:

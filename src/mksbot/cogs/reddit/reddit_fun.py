@@ -1,10 +1,7 @@
-import yaml
-
-from discord import Embed
 import praw
-
-from cogs.voice.streamable import upload_streamable
-from cogs.voice.streamable import streamable_instance
+import yaml
+from discord import Embed
+from mksbot.cogs.voice.streamable import streamable_instance, upload_streamable
 
 
 def reddit_post(sub, sort_by, n_posts=100):
@@ -21,7 +18,7 @@ def reddit_post(sub, sort_by, n_posts=100):
     if sub != "all":
         try:
             subreddit.id
-        
+
         except Exception as e:
             print("Error: {}".format(e))
             return "r/{} not found".format(sub), None
@@ -41,7 +38,11 @@ def reddit_post(sub, sort_by, n_posts=100):
 
     #   Return a submission that hasn't previously been shown, hide posts that don't meet embedded criteria
     for submission in post_list:
-        if (len(submission.selftext)) < 2048 and len(submission.title) < 256 and not submission.stickied:
+        if (
+            (len(submission.selftext)) < 2048
+            and len(submission.title) < 256
+            and not submission.stickied
+        ):
             submission.hide()
             return submission
 
@@ -58,9 +59,11 @@ def reddit_embed(submission):
     """
 
     #   Every post will contain base details/submission text
-    embedded = Embed(title="{}\n{}\n\n".format(submission.subreddit_name_prefixed, submission.title),
-                     description=submission.selftext,
-                     url=submission.shortlink).set_footer(text="Submitted by:\tu/{}".format(submission.author))
+    embedded = Embed(
+        title="{}\n{}\n\n".format(submission.subreddit_name_prefixed, submission.title),
+        description=submission.selftext,
+        url=submission.shortlink,
+    ).set_footer(text="Submitted by:\tu/{}".format(submission.author))
 
     tack_on = ""
 
@@ -69,11 +72,16 @@ def reddit_embed(submission):
         if submission.post_hint == "image":
             embedded.set_image(url=submission.url)
 
-        elif submission.post_hint == "hosted:video" or submission.post_hint == "rich:video":
+        elif (
+            submission.post_hint == "hosted:video"
+            or submission.post_hint == "rich:video"
+        ):
             embedded.description = submission.url
             if "v.redd.it" in submission.url:
                 user, pw = streamable_instance()
-                tack_on = "https://streamable.com/{}".format(upload_streamable(submission.url, user, pw))
+                tack_on = "https://streamable.com/{}".format(
+                    upload_streamable(submission.url, user, pw)
+                )
 
             else:
                 tack_on = submission.url
@@ -82,12 +90,16 @@ def reddit_embed(submission):
             if submission.url.endswith(".gif") or submission.url.endswith(".gifv"):
                 if "v.redd.it" in submission.url:
                     user, pw = streamable_instance()
-                    tack_on = "https://streamable.com/{}".format(upload_streamable(submission.url, user, pw))
+                    tack_on = "https://streamable.com/{}".format(
+                        upload_streamable(submission.url, user, pw)
+                    )
                 else:
                     tack_on = submission.url
 
             else:
-                embedded.set_image(url=submission.preview["images"][0]["resolutions"][-2]["url"])
+                embedded.set_image(
+                    url=submission.preview["images"][0]["resolutions"][-2]["url"]
+                )
 
     else:
         if submission.url.startswith("https://www.reddit.com/r"):
@@ -102,12 +114,14 @@ def reddit_instance():
     :return: praw.Reddit instance
     """
     config = yaml.safe_load(open("config.yml"))
-    reddit = praw.Reddit(client_id=config["reddit"]["id"],
-                         client_secret=config["reddit"]["secret"],
-                         user_agent=config["reddit"]["user_agent"],
-                         username=config["reddit"]["username"],
-                         password=config["reddit"]["pw"])
-    
+    reddit = praw.Reddit(
+        client_id=config["reddit"]["id"],
+        client_secret=config["reddit"]["secret"],
+        user_agent=config["reddit"]["user_agent"],
+        username=config["reddit"]["username"],
+        password=config["reddit"]["pw"],
+    )
+
     return reddit
 
 
@@ -119,4 +133,4 @@ def clear_hidden(n=None):
         posts = [post for post in reddit.user.me().hidden(limit=n)]
         if not posts:
             break
-        posts[0].unhide(other_submissions=posts[1:len(posts)])
+        posts[0].unhide(other_submissions=posts[1 : len(posts)])

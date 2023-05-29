@@ -1,16 +1,12 @@
 import discord
-
-from discord import Reaction, User, Message
+from discord import Message, Reaction, User
 from discord.ext import commands
-
-from cogs.voice.voice_fun import bot_audible_update
-from cogs.voice.voice_fun import create_queue_embed
-from cogs.voice.voice_fun import droid_speak_translate
-from cogs.voice.voice_fun import format_duration
-from cogs.voice.voice_fun import play_queue
-from cogs.voice.voice_fun import add_queue
-from cogs.voice.voice_fun import YTDLSource
-from cogs.voice.voice_fun import setup_player
+from mksbot.cogs.voice.voice_fun import (YTDLSource, add_queue,
+                                         bot_audible_update,
+                                         create_queue_embed,
+                                         droid_speak_translate,
+                                         format_duration, play_queue,
+                                         setup_player)
 
 
 class Music(commands.Cog):
@@ -236,20 +232,20 @@ class Music(commands.Cog):
                 else:
                     duration = format_duration(aud_source.duration)
 
-                queue_string += "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(playlist_id,
-                                                                                               duration,
-                                                                                               aud_source.title,
-                                                                                               aud_source.id)
+                queue_string += (
+                    "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(
+                        playlist_id, duration, aud_source.title, aud_source.id
+                    )
+                )
                 count += 1
 
-            embed_queue.add_field(name="Total in Queue",
-                                  value=len(queue_cp))
-            embed_queue.add_field(name="\u200b",
-                                  value="\u200b",
-                                  inline=False)
-            embed_queue.add_field(name=f"Queue (Displaying first {first})",
-                                  value=queue_string,
-                                  inline=False)
+            embed_queue.add_field(name="Total in Queue", value=len(queue_cp))
+            embed_queue.add_field(name="\u200b", value="\u200b", inline=False)
+            embed_queue.add_field(
+                name=f"Queue (Displaying first {first})",
+                value=queue_string,
+                inline=False,
+            )
             ret_msg: Message = await ctx.send(embed=embed_queue)
             await ret_msg.delete(delay=10)
 
@@ -285,7 +281,9 @@ class Music(commands.Cog):
         :param user: the User who sent the Reaction
         :return:
         """
-        if reaction.message.author.bot:  # This loosely rules out reactions to non-bot messages messages.
+        if (
+            reaction.message.author.bot
+        ):  # This loosely rules out reactions to non-bot messages messages.
             if str(reaction) == "⏭️":
                 await self._react_skip(reaction)
                 await reaction.message.clear_reactions()

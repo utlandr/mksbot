@@ -1,19 +1,20 @@
+---
 info:
   "image": "https://upload.wikimedia.org/wikipedia/commons/8/88/45_rpm_record.png"
   "source_code": "https://github.com/utlandr/mksbot"
 
 youtube_dl_config:
   'format': 'bestaudio/best'
-  'restrictfilenames': True
+  'restrictfilenames': true
   'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s'
-  'noplaylist': True
-  'nocheckcertificate': True
-  'ignoreerrors': True
-  'logtostderr': False
-  'quiet': True
-  'no_warnings': True
+  'noplaylist': true
+  'nocheckcertificate': true
+  'ignoreerrors': true
+  'logtostderr': true
+  'quiet': true
+  'no_warnings': true
   'default_search': 'auto'
-  'source_address': '0.0.0.0' 
+  'source_address': '0.0.0.0'
   'buffer_size': '16K'
 
 ffmpeg_config:
@@ -22,92 +23,92 @@ ffmpeg_config:
   'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
 
 droid_speak:
-    header:
-      nchannels: 2
-      sampwidth: 2
-      framerate: 44100
-      nframes: 0
-      comptype: "NONE"
-      compname: "not compressed"
+  header:
+    nchannels: 2
+    sampwidth: 2
+    framerate: 44100
+    nframes: 0
+    comptype: "NONE"
+    compname: "not compressed"
 
-    char_limit: 500
-    space: "./audio/droid_speak_audio/space_beep.wav"
+  char_limit: 500
+  space: "./audio/droid_speak_audio/space_beep.wav"
 
-    enter_audio: "./audio/droid_speak_audio/mksbot_enter.wav"
-    left_audio: "./audio/droid_speak_audio/mksbot_left.wav"
+  enter_audio: "./audio/droid_speak_audio/mksbot_enter.wav"
+  left_audio: "./audio/droid_speak_audio/mksbot_left.wav"
 
-    alphabet:
-      "0": "./audio/droid_speak_audio/0_beep.wav"
-      "1": "./audio/droid_speak_audio/1_beep.wav"
-      "2": "./audio/droid_speak_audio/2_beep.wav"
-      "3": "./audio/droid_speak_audio/3_beep.wav"
-      "4": "./audio/droid_speak_audio/4_beep.wav"
-      "5": "./audio/droid_speak_audio/5_beep.wav"
-      "6": "./audio/droid_speak_audio/6_beep.wav"
-      "7": "./audio/droid_speak_audio/7_beep.wav"
-      "8": "./audio/droid_speak_audio/8_beep.wav"
-      "9": "./audio/droid_speak_audio/9_beep.wav"
-      "A": "./audio/droid_speak_audio/A_beep.wav"
-      "B": "./audio/droid_speak_audio/B_beep.wav"
-      "!": "./audio/droid_speak_audio/emark_beep.wav"
-      "?": "./audio/droid_speak_audio/qmark_beep.wav"
-      "*": "./audio/droid_speak_audio/star_beep.wav"
-      "+": "./audio/droid_speak_audio/plus_beep.wav"
-      "C": "./audio/droid_speak_audio/C_beep.wav"
-      "-": "./audio/droid_speak_audio/dash_beep.wav"
-      "D": "./audio/droid_speak_audio/D_beep.wav"
-      "E": "./audio/droid_speak_audio/E_beep.wav"
-      "F": "./audio/droid_speak_audio/F_beep.wav"
-      "G": "./audio/droid_speak_audio/G_beep.wav"
-      "H": "./audio/droid_speak_audio/H_beep.wav"
-      "I": "./audio/droid_speak_audio/I_beep.wav"
-      "J": "./audio/droid_speak_audio/J_beep.wav"
-      "K": "./audio/droid_speak_audio/K_beep.wav"
-      "L": "./audio/droid_speak_audio/L_beep.wav"
-      "M": "./audio/droid_speak_audio/M_beep.wav"
-      "N": "./audio/droid_speak_audio/N_beep.wav"
-      "O": "./audio/droid_speak_audio/O_beep.wav"
-      "P": "./audio/droid_speak_audio/P_beep.wav"
-      "Q": "./audio/droid_speak_audio/Q_beep.wav"
-      "R": "./audio/droid_speak_audio/R_beep.wav"
-      "S": "./audio/droid_speak_audio/S_beep.wav"
-      "T": "./audio/droid_speak_audio/T_beep.wav"
-      "U": "./audio/droid_speak_audio/U_beep.wav"
-      "V": "./audio/droid_speak_audio/V_beep.wav"
-      "W": "./audio/droid_speak_audio/W_beep.wav"
-      "X": "./audio/droid_speak_audio/X_beep.wav"
-      "Y": "./audio/droid_speak_audio/Y_beep.wav"
-      "Z": "./audio/droid_speak_audio/Z_beep.wav"
+  alphabet:
+    "0": "./audio/droid_speak_audio/0_beep.wav"
+    "1": "./audio/droid_speak_audio/1_beep.wav"
+    "2": "./audio/droid_speak_audio/2_beep.wav"
+    "3": "./audio/droid_speak_audio/3_beep.wav"
+    "4": "./audio/droid_speak_audio/4_beep.wav"
+    "5": "./audio/droid_speak_audio/5_beep.wav"
+    "6": "./audio/droid_speak_audio/6_beep.wav"
+    "7": "./audio/droid_speak_audio/7_beep.wav"
+    "8": "./audio/droid_speak_audio/8_beep.wav"
+    "9": "./audio/droid_speak_audio/9_beep.wav"
+    "A": "./audio/droid_speak_audio/A_beep.wav"
+    "B": "./audio/droid_speak_audio/B_beep.wav"
+    "!": "./audio/droid_speak_audio/emark_beep.wav"
+    "?": "./audio/droid_speak_audio/qmark_beep.wav"
+    "*": "./audio/droid_speak_audio/star_beep.wav"
+    "+": "./audio/droid_speak_audio/plus_beep.wav"
+    "C": "./audio/droid_speak_audio/C_beep.wav"
+    "-": "./audio/droid_speak_audio/dash_beep.wav"
+    "D": "./audio/droid_speak_audio/D_beep.wav"
+    "E": "./audio/droid_speak_audio/E_beep.wav"
+    "F": "./audio/droid_speak_audio/F_beep.wav"
+    "G": "./audio/droid_speak_audio/G_beep.wav"
+    "H": "./audio/droid_speak_audio/H_beep.wav"
+    "I": "./audio/droid_speak_audio/I_beep.wav"
+    "J": "./audio/droid_speak_audio/J_beep.wav"
+    "K": "./audio/droid_speak_audio/K_beep.wav"
+    "L": "./audio/droid_speak_audio/L_beep.wav"
+    "M": "./audio/droid_speak_audio/M_beep.wav"
+    "N": "./audio/droid_speak_audio/N_beep.wav"
+    "O": "./audio/droid_speak_audio/O_beep.wav"
+    "P": "./audio/droid_speak_audio/P_beep.wav"
+    "Q": "./audio/droid_speak_audio/Q_beep.wav"
+    "R": "./audio/droid_speak_audio/R_beep.wav"
+    "S": "./audio/droid_speak_audio/S_beep.wav"
+    "T": "./audio/droid_speak_audio/T_beep.wav"
+    "U": "./audio/droid_speak_audio/U_beep.wav"
+    "V": "./audio/droid_speak_audio/V_beep.wav"
+    "W": "./audio/droid_speak_audio/W_beep.wav"
+    "X": "./audio/droid_speak_audio/X_beep.wav"
+    "Y": "./audio/droid_speak_audio/Y_beep.wav"
+    "Z": "./audio/droid_speak_audio/Z_beep.wav"
 
-    special:
-      # Primary
-      "worried": &worr "./audio/droid_speak_audio/concern_beep.wav"
-      "surprise":  &open "./audio/droid_speak_audio/surprised_beep.wav"
-      "zap":  &zap "./audio/droid_speak_audio/electrifyin_beep.wav"
-      "eureka":  &eur "./audio/droid_speak_audio/eureka_beep.wav"
-      "smiley":  &smiley "./audio/droid_speak_audio/excited_beep.wav"
-      "happy": &happy "./audio/droid_speak_audio/happy_beep.wav"
-      "laughing":  &laugh "./audio/droid_speak_audio/laugh_beep.wav"
-      "grinning":  &grinning "./audio/droid_speak_audio/playful_beep.wav"
-      "grin":  &grin "./audio/droid_speak_audio/proud_beep.wav"
-      "sad":  &sad "./audio/droid_speak_audio/sad_beep.wav"
-      "thinking":  &think "./audio/droid_speak_audio/thinking_beep.wav"    
-      
-      # Secondary
-      "worried2": "./audio/droid_speak_audio/confuse_beep.wav"
-      "surprise2": "./audio/droid_speak_audio/surprised2_beep.wav"
-      "smiley2": "./audio/droid_speak_audio/excited2_beep.wav"
-    
-    emoji:
-      # Emoji Bind
-      ":worried_face:": *worr
-      ":face_with_open_mouth:": *open
-      ":high_voltage:": *zap
-      ":nerd_face:": *eur
-      ":grinning_face_with_big_eyes:": *smiley
-      ":grinning_face_with_smiling_eyes:": *happy
-      ":grinning_squinting_face:": *laugh
-      ":grinning_face:": *grinning
-      ":beaming_face_with_smiling_eyes:": *grin
-      ":frowning_face_with_open_mouth:": *sad
-      ":thinking_face:": *think
+  special:
+    # Primary
+    "worried": &worr "./audio/droid_speak_audio/concern_beep.wav"
+    "surprise": &open "./audio/droid_speak_audio/surprised_beep.wav"
+    "zap": &zap "./audio/droid_speak_audio/electrifyin_beep.wav"
+    "eureka": &eur "./audio/droid_speak_audio/eureka_beep.wav"
+    "smiley": &smiley "./audio/droid_speak_audio/excited_beep.wav"
+    "happy": &happy "./audio/droid_speak_audio/happy_beep.wav"
+    "laughing": &laugh "./audio/droid_speak_audio/laugh_beep.wav"
+    "grinning": &grinning "./audio/droid_speak_audio/playful_beep.wav"
+    "grin": &grin "./audio/droid_speak_audio/proud_beep.wav"
+    "sad": &sad "./audio/droid_speak_audio/sad_beep.wav"
+    "thinking": &think "./audio/droid_speak_audio/thinking_beep.wav"
+
+    # Secondary
+    "worried2": "./audio/droid_speak_audio/confuse_beep.wav"
+    "surprise2": "./audio/droid_speak_audio/surprised2_beep.wav"
+    "smiley2": "./audio/droid_speak_audio/excited2_beep.wav"
+
+  emoji:
+    # Emoji Bind
+    ":worried_face:": *worr
+    ":face_with_open_mouth:": *open
+    ":high_voltage:": *zap
+    ":nerd_face:": *eur
+    ":grinning_face_with_big_eyes:": *smiley
+    ":grinning_face_with_smiling_eyes:": *happy
+    ":grinning_squinting_face:": *laugh
+    ":grinning_face:": *grinning
+    ":beaming_face_with_smiling_eyes:": *grin
+    ":frowning_face_with_open_mouth:": *sad
+    ":thinking_face:": *think
