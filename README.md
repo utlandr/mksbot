@@ -7,7 +7,7 @@ A simple discord bot.
 ### Requirements
 
 * `ffmpeg`
-* All python dependencies in `requirements.txt` (`pip install -r requiremenst.txt`)
+* All python dependencies in `requirements.txt` (`pip install -r requirements.txt`)
 * `config.yaml` (use the `config-template.yml` template)
 
 ## Screenshots
