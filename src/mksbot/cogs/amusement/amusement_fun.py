@@ -1,7 +1,8 @@
 import asyncio
 import codecs
-import discord
 import random
+
+import discord
 
 
 def get_random_donger():
@@ -10,7 +11,7 @@ def get_random_donger():
     :return: randomly selected string from file
     """
 
-    lines = codecs.open('dongers.txt', encoding='utf-8').read().splitlines()
+    lines = codecs.open("dongers.txt", encoding="utf-8").read().splitlines()
     myline = random.choice(lines)
     return myline
 
@@ -28,7 +29,7 @@ def russian_roulette(name, death_vals, count):
     if count in death_vals:
         response = "BOOOOM HEADSHOT, {} got pwned".format(name)
         hit = 1
-    
+
     else:
         response = "CLICK, {} gets to live another round".format(name)
         hit = 0
@@ -45,4 +46,3 @@ async def target_spam(target: discord.Member, spam_limit=10):
     """
     for i in range(spam_limit):
         await target.send(content="GET THE FUCK ON HERE", delete_after=30)
-

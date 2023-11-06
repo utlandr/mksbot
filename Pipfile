@@ -13,6 +13,15 @@ pyyaml = "==5.4"
 youtube-dl = "==2020.7.28"
 
 [dev-packages]
+black = "*"
+darglint = "*"
+flake8 = "*"
+flake8-pydocstyle = "*"
+isort = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+types-pyyaml = "*"
 
 [requires]
 python_version = "3.11"

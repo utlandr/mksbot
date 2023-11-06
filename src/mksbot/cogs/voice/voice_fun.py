@@ -53,9 +53,7 @@ class YTDLSource:
         playlist_search = re.search(yt_api.get("playlist_regex"), url)
 
         if video_search:
-            request = youtube.videos().list(
-                part="snippet,contentDetails", id=video_search.group(1)
-            )
+            request = youtube.videos().list(part="snippet,contentDetails", id=video_search.group(1))
         elif playlist_search:
             request = youtube.playlistItems().list(
                 part="snippet,contentDetails",
@@ -63,9 +61,7 @@ class YTDLSource:
                 maxResults=50,
             )
         else:
-            request = youtube.search().list(
-                part="snippet", q=url, maxResults=1, type="video"
-            )
+            request = youtube.search().list(part="snippet", q=url, maxResults=1, type="video")
         response = request.execute()
         data["request"] = url
         data["request_type"] = response.get("kind")
@@ -74,9 +70,7 @@ class YTDLSource:
         for item in response.get("items"):
             info = item
             if item.get("kind") == "youtube#searchResult":
-                vid_request = youtube.videos().list(
-                    part="snippet, contentDetails", id=item.get("id").get("videoId")
-                )
+                vid_request = youtube.videos().list(part="snippet, contentDetails", id=item.get("id").get("videoId"))
                 info = vid_request.execute()
                 videos.append(YTVideo(info.get("items")[0]))
             elif item.get("kind") == "youtube#playlistItem":
@@ -104,9 +98,7 @@ class YTVideo:
         self.duration = entry.get("contentDetails").get("duration")
         self.channel_name = entry.get("snippet").get("channelTitle")
         self.channel_id = entry.get("snippet").get("channelId")
-        self.thumbnail_url = (
-            entry.get("snippet").get("thumbnails").get("default").get("url")
-        )
+        self.thumbnail_url = entry.get("snippet").get("thumbnails").get("default").get("url")
         self.is_live = entry.get("liveBroadcastContent")
 
     def extract_audio(self):
@@ -133,27 +125,19 @@ async def bot_audible_update(ctx, state):
     """
     if ctx.voice_client:
         if state == "Entering":
-            source = discord.PCMVolumeTransformer(
-                discord.FFmpegPCMAudio(droid_speak_config["enter_audio"])
-            )
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["enter_audio"]))
             await asyncio.sleep(0.5)
             if ctx.voice_client.is_playing():
                 ctx.voice_client.source = source
             else:
-                ctx.voice_client.play(
-                    source, after=lambda e: print("Player error: %s" % e) if e else None
-                )
+                ctx.voice_client.play(source, after=lambda e: print("Player error: %s" % e) if e else None)
 
         else:
-            source = discord.PCMVolumeTransformer(
-                discord.FFmpegPCMAudio(droid_speak_config["left_audio"])
-            )
+            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["left_audio"]))
             if ctx.voice_client.is_playing():
                 ctx.voice_client.source = source
             else:
-                ctx.voice_client.play(
-                    source, after=lambda e: print("Player error: %s" % e) if e else None
-                )
+                ctx.voice_client.play(source, after=lambda e: print("Player error: %s" % e) if e else None)
             await asyncio.sleep(1.7)
 
 
@@ -208,18 +192,14 @@ def play_queue(music, ctx):
                     tmp = source.extract_audio()
                     audio = discord.PCMVolumeTransformer(tmp, volume=music.cur_volume)
                     music.players[guild_id] = audio
-                    asyncio.run_coroutine_threadsafe(
-                        setup_player(ctx, source), loop=music.bot.loop
-                    )
+                    asyncio.run_coroutine_threadsafe(setup_player(ctx, source), loop=music.bot.loop)
                     play_audio(music, audio, ctx)
                 else:
                     pass
 
 
 def play_audio(music, source, ctx):
-    ctx.voice_client.play(
-        source, after=lambda e: print(e) if e else on_audio_complete(music, ctx)
-    )
+    ctx.voice_client.play(source, after=lambda e: print(e) if e else on_audio_complete(music, ctx))
 
 
 def on_audio_complete(music, ctx):
@@ -294,9 +274,7 @@ def create_playing_embed(source: YTVideo, status):
 
     embed_playing.add_field(
         name="Audio",
-        value="[{}](https://www.youtube.com/watch?v={})".format(
-            source.title, source.id
-        ),
+        value="[{}](https://www.youtube.com/watch?v={})".format(source.title, source.id),
         inline=False,
     )
 
@@ -338,9 +316,7 @@ def single_queue_embed(video: YTVideo, position):
 
     playlist_embedd.add_field(name="Duration", value=duration, inline=False)
 
-    playlist_embedd.add_field(
-        name="Status", value="Queued: {}".format(int_to_ordinal(position))
-    )
+    playlist_embedd.add_field(name="Status", value="Queued: {}".format(int_to_ordinal(position)))
 
     playlist_embedd.set_thumbnail(url=video.thumbnail_url)
 
@@ -357,9 +333,7 @@ def playlist_queue_embed(source: YTDLSource):
 
     playlist_embed.add_field(name="Playlist Added", value=source.data.get("request"))
     playlist_embed.add_field(name="\u200b", value="\u200b", inline=False)
-    playlist_embed.add_field(
-        name="Tracks Added", value=f"{len(source.videos)}", inline=False
-    )
+    playlist_embed.add_field(name="Tracks Added", value=f"{len(source.videos)}", inline=False)
 
     return playlist_embed
 

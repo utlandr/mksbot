@@ -1,12 +1,17 @@
 import discord
 from discord import Message, Reaction, User
 from discord.ext import commands
-from mksbot.cogs.voice.voice_fun import (YTDLSource, add_queue,
-                                         bot_audible_update,
-                                         create_queue_embed,
-                                         droid_speak_translate,
-                                         format_duration, play_queue,
-                                         setup_player)
+
+from mksbot.cogs.voice.voice_fun import (
+    YTDLSource,
+    add_queue,
+    bot_audible_update,
+    create_queue_embed,
+    droid_speak_translate,
+    format_duration,
+    play_queue,
+    setup_player,
+)
 
 
 class Music(commands.Cog):
@@ -180,7 +185,6 @@ class Music(commands.Cog):
                 removed = self.queues[guild_id].pop(int(queue_id[0]) - 1).title
                 await ctx.send("Removed:\t{}".format(removed))
         else:
-
             player_title = self.queues[guild_id][0].title
             await ctx.send("Skipping:\t{}".format(player_title))
             ctx.voice_client.stop()
@@ -232,10 +236,8 @@ class Music(commands.Cog):
                 else:
                     duration = format_duration(aud_source.duration)
 
-                queue_string += (
-                    "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(
-                        playlist_id, duration, aud_source.title, aud_source.id
-                    )
+                queue_string += "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(
+                    playlist_id, duration, aud_source.title, aud_source.id
                 )
                 count += 1
 
@@ -281,9 +283,7 @@ class Music(commands.Cog):
         :param user: the User who sent the Reaction
         :return:
         """
-        if (
-            reaction.message.author.bot
-        ):  # This loosely rules out reactions to non-bot messages messages.
+        if reaction.message.author.bot:  # This loosely rules out reactions to non-bot messages messages.
             if str(reaction) == "⏭️":
                 await self._react_skip(reaction)
                 await reaction.message.clear_reactions()

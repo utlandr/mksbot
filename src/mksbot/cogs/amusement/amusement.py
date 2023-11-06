@@ -4,8 +4,8 @@ import random as r
 import discord
 import yaml
 from discord.ext import commands
-from mksbot.cogs.amusement.amusement_fun import (get_random_donger,
-                                                 russian_roulette, target_spam)
+
+from mksbot.cogs.amusement.amusement_fun import get_random_donger, russian_roulette, target_spam
 
 
 #   Amusement class cog addon to mksbot main. Primarily contains random/non-admin type commands
@@ -51,37 +51,24 @@ class Amusement(commands.Cog):
                 to_kill = 1
 
         except AttributeError:
-            response = "{}: !roulette requires you to be in a voice channel".format(
-                ctx.message.author.mention
-            )
+            response = "{}: !roulette requires you to be in a voice channel".format(ctx.message.author.mention)
             await ctx.send(response)
             return
 
         #   Load the weapon (randomly choose position to place bullets)
         if n_mem > 1:
-
             #   Attempt to grab R.I.P. voice channel object, else create it.
-            graveyard_vc = discord.utils.get(
-                guild.voice_channels, category=channel.category, name="R.I.P."
-            )
+            graveyard_vc = discord.utils.get(guild.voice_channels, category=channel.category, name="R.I.P.")
 
             if not graveyard_vc:
-                await guild.create_voice_channel(
-                    name="R.I.P.", category=channel.category
-                )
-                graveyard_vc = discord.utils.get(
-                    guild.voice_channels, category=channel.category, name="R.I.P."
-                )
+                await guild.create_voice_channel(name="R.I.P.", category=channel.category)
+                graveyard_vc = discord.utils.get(guild.voice_channels, category=channel.category, name="R.I.P.")
 
             #   Set numbers of 'chambers'
             if not chambers or chambers < to_kill:
                 chambers = n_mem
 
-            await ctx.send(
-                "MksBot loads {} rounds into his {} barrelled weapon".format(
-                    to_kill, chambers
-                )
-            )
+            await ctx.send("MksBot loads {} rounds into his {} barrelled weapon".format(to_kill, chambers))
 
             #   Randomly shuffle and designate members to 'kill'
             death_chambers = r.sample(range(0, chambers), to_kill)
@@ -92,9 +79,7 @@ class Amusement(commands.Cog):
             #   Iterate through all voice channel members and 'kill' randomly selected members
             while shot < to_kill:
                 for member in members:
-                    response, kill_check = russian_roulette(
-                        member.name, death_chambers, count
-                    )
+                    response, kill_check = russian_roulette(member.name, death_chambers, count)
                     await ctx.send(response)
                     await asyncio.sleep(0.7)
                     count += 1
@@ -102,9 +87,7 @@ class Amusement(commands.Cog):
                     if kill_check:
                         if mode == "kill":
                             members.remove(member)
-                            await member.move_to(
-                                graveyard_vc, reason="Shot behind the barn by MksBot"
-                            )
+                            await member.move_to(graveyard_vc, reason="Shot behind the barn by MksBot")
                         shot += 1
                         break
 

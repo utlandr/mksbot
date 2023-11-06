@@ -1,6 +1,7 @@
 import praw
 import yaml
 from discord import Embed
+
 from mksbot.cogs.voice.streamable import streamable_instance, upload_streamable
 
 
@@ -38,11 +39,7 @@ def reddit_post(sub, sort_by, n_posts=100):
 
     #   Return a submission that hasn't previously been shown, hide posts that don't meet embedded criteria
     for submission in post_list:
-        if (
-            (len(submission.selftext)) < 2048
-            and len(submission.title) < 256
-            and not submission.stickied
-        ):
+        if (len(submission.selftext)) < 2048 and len(submission.title) < 256 and not submission.stickied:
             submission.hide()
             return submission
 
@@ -72,16 +69,11 @@ def reddit_embed(submission):
         if submission.post_hint == "image":
             embedded.set_image(url=submission.url)
 
-        elif (
-            submission.post_hint == "hosted:video"
-            or submission.post_hint == "rich:video"
-        ):
+        elif submission.post_hint == "hosted:video" or submission.post_hint == "rich:video":
             embedded.description = submission.url
             if "v.redd.it" in submission.url:
                 user, pw = streamable_instance()
-                tack_on = "https://streamable.com/{}".format(
-                    upload_streamable(submission.url, user, pw)
-                )
+                tack_on = "https://streamable.com/{}".format(upload_streamable(submission.url, user, pw))
 
             else:
                 tack_on = submission.url
@@ -90,16 +82,12 @@ def reddit_embed(submission):
             if submission.url.endswith(".gif") or submission.url.endswith(".gifv"):
                 if "v.redd.it" in submission.url:
                     user, pw = streamable_instance()
-                    tack_on = "https://streamable.com/{}".format(
-                        upload_streamable(submission.url, user, pw)
-                    )
+                    tack_on = "https://streamable.com/{}".format(upload_streamable(submission.url, user, pw))
                 else:
                     tack_on = submission.url
 
             else:
-                embedded.set_image(
-                    url=submission.preview["images"][0]["resolutions"][-2]["url"]
-                )
+                embedded.set_image(url=submission.preview["images"][0]["resolutions"][-2]["url"])
 
     else:
         if submission.url.startswith("https://www.reddit.com/r"):

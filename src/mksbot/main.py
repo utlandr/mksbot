@@ -52,9 +52,7 @@ async def info(ctx):
         color=0xEEE657,
     )
 
-    embed.add_field(
-        inline=False, name="Where humans can complain", value=config["bot"]["email"]
-    )
+    embed.add_field(inline=False, name="Where humans can complain", value=config["bot"]["email"])
 
     embed.add_field(
         inline=False,
@@ -122,7 +120,6 @@ async def help(ctx, *args):
         )
 
         for category in config["help"]:
-
             embed.add_field(name="\u200b", value=category, inline=False)
 
             for command_name in config["help"][category]:
@@ -141,10 +138,7 @@ async def help(ctx, *args):
         c_group = [group for _ in config["help"] for group in config["help"]]
         just_c = [c in group for group in config["help"] for c in config["help"][group]]
         command = args[0].replace("!", "")
-        [
-            [c_group.append(group) for c in config["help"][group]]
-            for group in config["help"]
-        ]
+        [[c_group.append(group) for c in config["help"][group]] for group in config["help"]]
         [[just_c.append(c) for c in config["help"][group]] for group in config["help"]]
         if command in just_c:
             ind = just_c.index(command)
@@ -157,9 +151,7 @@ async def help(ctx, *args):
                 icon_url="http://www.clipartbest.com/cliparts/aie/65d/aie65d4bT.png",
             )
 
-            embed.add_field(
-                name="Description", value=details["description"], inline=False
-            )
+            embed.add_field(name="Description", value=details["description"], inline=False)
             embed.add_field(name="\u200b", value="\u200b", inline=False)
             embed.add_field(name="Invocation", value=details["example"], inline=False)
             embed.add_field(name="\u200b", value="\u200b", inline=False)
@@ -187,9 +179,7 @@ handler = logging.FileHandler(
     encoding="utf-8",
     mode="w",
 )
-handler.setFormatter(
-    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
-)
+handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
 logger.addHandler(handler)
 
 #   Initiate discord bot and client instance

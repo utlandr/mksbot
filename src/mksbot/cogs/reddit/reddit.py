@@ -2,8 +2,8 @@ import asyncio
 
 import yaml
 from discord.ext import commands
-from mksbot.cogs.reddit.reddit_fun import (clear_hidden, reddit_embed,
-                                           reddit_post)
+
+from mksbot.cogs.reddit.reddit_fun import clear_hidden, reddit_embed, reddit_post
 
 
 #   Reddit cog for all things Reddit

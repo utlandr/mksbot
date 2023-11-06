@@ -10,6 +10,11 @@ A simple discord bot.
 * All python dependencies in `requirements.txt` (`pip install -r requirements.txt`)
 * `config.yaml` (use the `config-template.yml` template)
 
+### Local
+
+### Docker
+
+
 ## Screenshots
 
 

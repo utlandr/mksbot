@@ -21,8 +21,69 @@ dependencies = [
     "youtube-dl",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "black",
+    "darglint",
+    "flake8",
+    "flake8-pydocstyle",
+    "isort",
+    "mypy",
+    "pytest",
+    "pytest-cov",
+    "types-PyYAML"
+]
+
 [project.scripts]
 start-mksbot = "mksbot.main:main"
 
 [tool.hatch.version]
 path = "src/mksbot/__about__.py"
+
+[tool.mypy]
+strict = true
+check_untyped_defs = true
+explicit_package_bases = true
+mypy_path = "src"
+
+[tool.flake8]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+include = '\.pyi?$'
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+
+[tool.pydocstyle]
+### Ignoring explanation
+# D1 - Missing docstrings (enforced elsewhere)
+# D202 - No blank lines after function docstring
+# D203 - 1 blank line required before class docstring
+# D205 - 1 blank line required between summary line and description
+# D212 - Multi-line docstring summary should start at the first line
+# D406 - Section name should end with newline
+# D407 - Missing dashed underline after section
+# D411 - Missing blank line before section
+# D413 - Missing blank line after last section
+ignore = """
+D1,
+D202,D203,D205,D212,
+D400,D406,D407,D411,D413
+"""
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+pythonpath = [
+  "."
+]
+cache_dir = "build/.pytest_cache"
+
+[tool.coverage.run]
+data_file = "build/.coverage"
