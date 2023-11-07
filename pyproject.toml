@@ -10,7 +10,7 @@ authors = [
 description = "Custom Discord Bot"
 readme =  "README.md"
 dynamic = ["version"]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "requests",
     "discord",
@@ -18,7 +18,7 @@ dependencies = [
     "google-api-python-client",
     "praw",
     "pyyaml",
-    "youtube-dl",
+	"youtube-dl",
 ]
 
 [project.optional-dependencies]
@@ -55,7 +55,7 @@ line_length = 120
 
 [tool.black]
 line-length = 120
-target-version = ["py311"]
+target-version = ["py312"]
 include = '\.pyi?$'
 
 [tool.bandit]
