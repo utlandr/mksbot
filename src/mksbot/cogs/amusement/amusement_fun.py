@@ -1,11 +1,10 @@
-import asyncio
 import codecs
 import random
 
 import discord
 
 
-def get_random_donger():
+def get_random_donger() -> str:
     """Return a random line from a plaintext file
 
     :return: randomly selected string from file
@@ -16,14 +15,13 @@ def get_random_donger():
     return myline
 
 
-def russian_roulette(name, death_vals, count):
+def russian_roulette(name: str, death_vals: list[int], count: int) -> tuple[str, int]:
     """Returns the appropriate response to a russian roulette roll.
 
     :param name: targeted user name
     :param death_vals: list specifying values that will result in a 'kill'
     :param count: targeted user's assigned count value
-    :return response: string response to send to as a reply
-    :return hit: specifies whether user was 'killed' or not
+    :return: user's fate
     """
 
     if count in death_vals:
@@ -37,7 +35,7 @@ def russian_roulette(name, death_vals, count):
     return response, hit
 
 
-async def target_spam(target: discord.Member, spam_limit=10):
+async def target_spam(target: discord.Member, spam_limit: int = 10) -> None:
     """Spams the target member of the guild with several DMs
 
     :param target: discord.Member object to spam user with messages

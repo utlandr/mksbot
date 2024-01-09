@@ -13,7 +13,7 @@ dynamic = ["version"]
 requires-python = ">=3.12"
 dependencies = [
     "requests",
-    "discord",
+	"discord.py[voice]",
     "emoji",
     "google-api-python-client",
     "praw",
@@ -31,7 +31,8 @@ dev = [
     "mypy",
     "pytest",
     "pytest-cov",
-    "types-PyYAML"
+    "types-PyYAML",
+    "types-requests",
 ]
 
 [project.scripts]
@@ -45,6 +46,11 @@ strict = true
 check_untyped_defs = true
 explicit_package_bases = true
 mypy_path = "src"
+
+[[tool.mypy.overrides]]
+# these packages do not have type information
+module = ["googleapiclient.*", "youtube_dl.*", "praw.*"]
+ignore_missing_imports = true
 
 [tool.flake8]
 line-length = 120

@@ -1,19 +1,21 @@
 import asyncio
+from typing import Any
 
 import yaml
 from discord.ext import commands
+from discord.ext.commands.bot import Bot
 
 from mksbot.cogs.reddit.reddit_fun import clear_hidden, reddit_embed, reddit_post
 
 
 #   Reddit cog for all things Reddit
 class Reddit(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         self.config = yaml.safe_load(open("config.yml"))
 
     @commands.command(pass_context=True)
-    async def reddit(self, ctx, subreddit="all", sort_by="hot"):
+    async def reddit(self, ctx: commands.Context[Any], subreddit: str = "all", sort_by: str = "hot") -> None:
         """Scrape and send a formatted post from any subreddit
 
         :param ctx: command invocation message context
@@ -41,7 +43,7 @@ class Reddit(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_permissions(administrator=True)
-    async def reddit_clear(self, ctx, posts=10):
+    async def reddit_clear(self, ctx: commands.Context[Any], posts: int = 10) -> None:
         """Clears a specified number of posts from the reddit account hidden set
 
         :param ctx: command invocation message context
@@ -53,5 +55,5 @@ class Reddit(commands.Cog):
 
 
 #   This function is used by discord.py to integrate the cog+subroutines into the bot
-def setup(bot):
-    bot.add_cog(Reddit(bot))
+async def setup(bot: Bot) -> None:
+    await bot.add_cog(Reddit(bot))

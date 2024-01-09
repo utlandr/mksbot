@@ -2,13 +2,17 @@ import asyncio
 import random
 import re
 import wave
+from typing import Any
 
 import discord
 import googleapiclient.discovery
 import yaml
 import youtube_dl
-from discord import Message
+from discord import FFmpegPCMAudio, Message, PCMVolumeTransformer, VoiceClient
+from discord.ext.commands import Context
 from emoji import demojize
+
+from mksbot.cogs.voice.voice import Music
 
 #   Suppress noise about console usage from errors
 youtube_dl.utils.bug_reports_message = lambda: ""
@@ -29,16 +33,46 @@ youtube = googleapiclient.discovery.build(
 )
 
 
+class YTVideo:
+    def __init__(self, entry: dict[str, Any]):
+        snip = entry["snippet"]
+        content = entry["contentDetails"]
+        assert snip is not None
+        assert content is not None
+
+        self.id = entry.get("id")
+        self.duration = content.get("duration")
+        self.is_live = entry.get("liveBroadcastContent")
+        self.title = snip.get("title")
+        self.channel_id = snip.get("channelId")
+        self.thumbnail_url = snip.get("thumbnails").get("default").get("url")
+        self.channel_name = snip.get("channelTitle")
+
+    def extract_audio(self) -> FFmpegPCMAudio:
+        """Retrieve AudioSource from YT info
+
+        :return:
+        """
+        url = f"https://www.youtube.com/watch?v={self.id}"
+        ytdl.cache.remove()
+        data = ytdl.extract_info(url, download=False)
+
+        assert data is not None
+        filename = data["url"]
+
+        return discord.FFmpegPCMAudio(filename, **ffmpeg_options)
+
+
 #   Youtube download source class (with FFmpeg audio conversion)
 class YTDLSource:
-    def __init__(self, data, videos):
+    def __init__(self, data: dict[str, str], videos: list[YTVideo]):
         self.data = data
         self.request_type = data.get("kind")
         self.request = data.get("")
         self.videos = videos
 
     @classmethod
-    async def get_info(cls, url):
+    async def get_info(cls, url: str) -> "YTDLSource":
         """Stream audio from a supplied url instead of searching
 
         :param url: supplied URL
@@ -91,57 +125,34 @@ class YTDLSource:
         return cls(data, videos)
 
 
-class YTVideo:
-    def __init__(self, entry: dict):
-        self.title = entry.get("snippet").get("title")
-        self.id = entry.get("id")
-        self.duration = entry.get("contentDetails").get("duration")
-        self.channel_name = entry.get("snippet").get("channelTitle")
-        self.channel_id = entry.get("snippet").get("channelId")
-        self.thumbnail_url = entry.get("snippet").get("thumbnails").get("default").get("url")
-        self.is_live = entry.get("liveBroadcastContent")
-
-    def extract_audio(self):
-        """Retrieve AudioSource from YT info
-
-        :return:
-        """
-        url = f"https://www.youtube.com/watch?v={self.id}"
-        ytdl.cache.remove()
-        data = ytdl.extract_info(url, download=False)
-
-        filename = data["url"]
-
-        tmp = discord.FFmpegPCMAudio(filename, **ffmpeg_options)
-        return tmp
-
-
-async def bot_audible_update(ctx, state):
+async def bot_audible_update(ctx: Context[Any], state: str) -> None:
     """Play update audio when leaving/entering channels
 
     :param ctx: command invocation message context:
     :param state: specifies whether the bot is entering or leaving
     :return: None
     """
-    if ctx.voice_client:
+    if ctx.bot:
+        voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+        assert voice_client is not None
         if state == "Entering":
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["enter_audio"]))
             await asyncio.sleep(0.5)
-            if ctx.voice_client.is_playing():
-                ctx.voice_client.source = source
+            if voice_client.is_playing():
+                voice_client.source = source
             else:
-                ctx.voice_client.play(source, after=lambda e: print("Player error: %s" % e) if e else None)
+                voice_client.play(source, after=lambda e: print("Player error: %s" % e) if e else None)
 
         else:
             source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(droid_speak_config["left_audio"]))
-            if ctx.voice_client.is_playing():
-                ctx.voice_client.source = source
+            if voice_client.is_playing():
+                voice_client.source = source
             else:
-                ctx.voice_client.play(source, after=lambda e: print("Player error: %s" % e) if e else None)
+                voice_client.play(source, after=lambda e: print("Player error: %s" % e) if e else None)
             await asyncio.sleep(1.7)
 
 
-async def add_queue(music, ctx, source: YTDLSource):
+async def add_queue(music: Music, ctx: Context[Any], source: YTDLSource) -> None:
     """Add source to a music queue
 
     :param music:
@@ -149,44 +160,47 @@ async def add_queue(music, ctx, source: YTDLSource):
     :param source:
     :return:
     """
-    guild_id = ctx.message.guild.id
-    if guild_id in music.queues:
-        music.queues[guild_id].extend(source.videos)
+    if ctx.message.guild:
+        guild_id = ctx.message.guild.id
+        if guild_id in music.queues:
+            music.queues[guild_id].extend(source.videos)
 
-    else:
-        music.queues[guild_id] = source.videos
+        else:
+            music.queues[guild_id] = source.videos
 
-    if len(source.videos) == 1:
-        embed = single_queue_embed(source.videos[0], len(music.queues[guild_id]))
-        ret_msg: Message = await ctx.send(embed=embed)
-        await ret_msg.delete(delay=10)
-    else:
-        embed = playlist_queue_embed(source)
-        ret_msg: Message = await ctx.send(embed=embed)
-        await ret_msg.delete(delay=10)
+        if len(source.videos) == 1:
+            embed = single_queue_embed(source.videos[0], len(music.queues[guild_id]))
+            ret_msg: Message = await ctx.send(embed=embed)
+            await ret_msg.delete(delay=10)
+        else:
+            embed = playlist_queue_embed(source)
+            ret_msg2: Message = await ctx.send(embed=embed)
+            await ret_msg2.delete(delay=10)
     return
 
 
-async def setup_player(ctx, source):
+async def setup_player(ctx: Context[Any], source: YTVideo) -> None:
     msg = await ctx.send(embed=create_playing_embed(source, "Playing"))
     await msg.add_reaction("⏯️")
     await msg.add_reaction("⏭️")
 
 
 #   Queue player
-def play_queue(music, ctx):
+def play_queue(music: Music, ctx: Context[Any]) -> None:
     """Setup and manage the music player
 
     :param music: The bot's Music cog instance
     :param ctx: command invocation message context
     :return: None
     """
-    guild_id = ctx.message.guild.id
-    if ctx.voice_client:
-        if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+    guild = ctx.message.guild
+    voice_client: VoiceClient = ctx.bot.voice_clients[0]
+    if voice_client and guild:
+        if voice_client.is_paused() or voice_client.is_playing():
             pass
         else:
-            if check_queue(music.queues, ctx.message.guild.id):
+            guild_id = guild.id
+            if check_queue(music.queues, guild_id):
                 if len(music.queues[guild_id]):
                     source = music.queues[guild_id][0]
                     tmp = source.extract_audio()
@@ -198,32 +212,34 @@ def play_queue(music, ctx):
                     pass
 
 
-def play_audio(music, source, ctx):
-    ctx.voice_client.play(source, after=lambda e: print(e) if e else on_audio_complete(music, ctx))
+def play_audio(music: Music, source: PCMVolumeTransformer[Any], ctx: Context[Any]) -> None:
+    ctx.bot.voice_clients[0].play(source, after=lambda e: print(e) if e else on_audio_complete(music, ctx))
 
 
-def on_audio_complete(music, ctx):
-    guild_id = ctx.message.guild.id
-    music.queues[guild_id].pop(0)
+def on_audio_complete(music: Music, ctx: Context[Any]) -> None:
+    guild = ctx.message.guild
+    if guild:
+        guild_id = guild.id
+        music.queues[guild_id].pop(0)
 
-    if ctx.voice_client:
-        play_queue(music, ctx)
+        if ctx.voice_client:
+            play_queue(music, ctx)
 
 
-def check_queue(c_queue, c_id):
+def check_queue(c_queue: dict[int, list[YTVideo]], c_id: int) -> bool:
     """Check specified queue for guild id
 
     :param c_queue: The queue (dictionary) to check
     :param c_id: The guild ID to check
     :return:
     """
-    if c_queue[c_id] is not []:
+    if c_queue[c_id]:
         return True
     else:
         return False
 
 
-def create_queue_embed(title):
+def create_queue_embed(title: str) -> discord.Embed:
     """Generates the base embed information for !queue command
 
     :param title: embed title
@@ -240,7 +256,7 @@ def create_queue_embed(title):
     return playlist_embed
 
 
-def format_duration(duration):
+def format_duration(duration: str) -> str:
     """
 
     :param duration: ISO8601 formatted time delta
@@ -251,7 +267,7 @@ def format_duration(duration):
     return formatted
 
 
-def create_playing_embed(source: YTVideo, status):
+def create_playing_embed(source: YTVideo, status: str) -> discord.Embed:
     """Generate a playing embed source
 
     :param source: The audio player source object
@@ -287,7 +303,7 @@ def create_playing_embed(source: YTVideo, status):
     return embed_playing
 
 
-def single_queue_embed(video: YTVideo, position):
+def single_queue_embed(video: YTVideo, position: int) -> discord.Embed:
     """Generate a queued audio embed
 
     :param video: YTVideo source
@@ -323,7 +339,7 @@ def single_queue_embed(video: YTVideo, position):
     return playlist_embedd
 
 
-def playlist_queue_embed(source: YTDLSource):
+def playlist_queue_embed(source: YTDLSource) -> discord.Embed:
     """Generates an Embed object for added playlists
 
     :param source: the YTDLSource object containing playlist information
@@ -338,7 +354,7 @@ def playlist_queue_embed(source: YTDLSource):
     return playlist_embed
 
 
-def int_to_ordinal(num):
+def int_to_ordinal(num: int) -> str:
     """Convert int value to ordinal string
 
     :param num: Integer
@@ -363,7 +379,7 @@ def int_to_ordinal(num):
     return "{}{}".format(num, append)
 
 
-async def droid_speak_translate(ctx, phrase):
+async def droid_speak_translate(ctx: Context[Any], phrase: list[str]) -> None:
     """Translates user supplied text into droid speak audio that the bot will speak in a voice channel
 
     :param ctx: command invocation message context
@@ -400,13 +416,14 @@ async def droid_speak_translate(ctx, phrase):
         infiles.append(droid_speak_config["space"])
 
     if infiles:
-        wav_params = list()
-        wav_params.append(droid_speak_config["header"]["nchannels"])
-        wav_params.append(droid_speak_config["header"]["sampwidth"])
-        wav_params.append(droid_speak_config["header"]["framerate"])
-        wav_params.append(droid_speak_config["header"]["nframes"])
-        wav_params.append(droid_speak_config["header"]["comptype"])
-        wav_params.append(droid_speak_config["header"]["compname"])
+        wav_params: tuple[int, int, int, int, str, str] = (
+            droid_speak_config["header"]["nchannels"],
+            droid_speak_config["header"]["sampwidth"],
+            droid_speak_config["header"]["framerate"],
+            droid_speak_config["header"]["nframes"],
+            droid_speak_config["header"]["comptype"],
+            droid_speak_config["header"]["compname"],
+        )
 
         outfile = "./audio/output/sounds.wav"
 
@@ -414,14 +431,13 @@ async def droid_speak_translate(ctx, phrase):
             output.setparams(wav_params)
             for infile in infiles:
                 with wave.open(infile, "rb") as w:
-                    data = [[w.getparams(), w.readframes(w.getnframes())]]
-                    output.writeframes(data[0][1])
+                    output.writeframes(w.readframes(w.getnframes()))
 
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(outfile))
-        ctx.voice_client.play(source)
+        ctx.bot.voice_clients[0].play(source)
 
 
-def unique_num(s):
+def unique_num(s: str) -> int:
     """Transform a string into a 'unique' integer value
 
     :param s: string to convert

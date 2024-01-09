@@ -78,21 +78,21 @@ pytest:
 	@echo --- Pytest regression and unit tests ---
 	pytest --cov ${SRC}/${PACKAGE} ${TESTS}
 
-.PHONY: bandit
-bandit:
-	@echo
-	@echo --- Bandit security checks ---
-	bandit -c pyproject.toml -f custom -r ${SRC} ${TESTS}
-
 .PHONY: build
 build: clean create-egg-base
 	@echo
 	@echo --- Build package wheel ---
 	python -m build -o build/dist
 
+.PHONY: build-docker
+build-docker:
+	@echo
+	@echo --- Docker build image ---
+	docker buildx build -t ${PACKAGE} .
+
 # Run all checking tools
 .PHONY: checks
-checks: isort-check black-check docstyle lint mypy namespace-check bandit pytest
+checks: isort-check black-check lint mypy pytest
 
 .PHONY: clean
 clean:

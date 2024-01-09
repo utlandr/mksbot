@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import traceback
@@ -5,6 +6,7 @@ import traceback
 import discord
 import yaml
 from discord.ext import commands
+from discord.ext.commands import Bot, Context
 
 import mksbot.base_functions as mks
 from mksbot.cogs.amusement.amusement import Amusement
@@ -26,10 +28,10 @@ cogs = [Reddit(bot), Amusement(bot), Music(bot)]
 if __name__ == "__main__":
     for extension in cogs:
         try:
-            bot.add_cog(extension)
+            asyncio.run(bot.add_cog(extension))
 
         except Exception as e:
-            print("Failed to load extension {}.".format(extension), file=sys.stderr)
+            print("Failed to load extension {}: {}".format(extension, e), file=sys.stderr)
             traceback.print_exc()
 
 
@@ -38,13 +40,17 @@ bot.remove_command("help")
 
 
 @bot.event
-async def on_ready():
-    """Successful connection to server"""
-    print("\n\nLogged in as\nUsername:  %s\nID  %s\n\n" % (bot.user.name, bot.user.id))
+async def on_ready() -> None:
+    """Event hook upon successfull connection"""
+    bot_user = bot.user
+    if bot_user:
+        print("\n\nLogged in as\nUsername:  %s\nID  %s\n\n" % (bot_user.name, bot_user.id))
+    else:
+        print("\n\nNo login\n\n")
 
 
-@bot.command(pass_context=True)
-async def info(ctx):
+@bot.command()  # type: ignore
+async def info(ctx: Context[Bot]) -> None:
     """Display basic information/help/details on the bot"""
     embed = discord.Embed(
         title=config["bot"]["title"],
@@ -63,15 +69,15 @@ async def info(ctx):
     await ctx.send(embed=embed)
 
 
-@bot.command(pass_context=True)
-async def user(ctx, *, member: discord.Member):
+@bot.command()  # type: ignore
+async def user(ctx: Context[Bot], *, member: discord.Member) -> None:
     """Get user information"""
     await ctx.send(embed=mks.user_info_embed(member))
 
 
-@bot.command(pass_context=True)
+@bot.command()  # type: ignore
 @commands.has_permissions(administrator=True)
-async def rm(ctx, *number):
+async def rm(ctx: Context[Bot], *number: int | str) -> None:
     """Remove messages one-by-one in the invoked text channel
 
     :param ctx: command invocation message context
@@ -89,21 +95,21 @@ async def rm(ctx, *number):
 
         except ValueError:
             if number[0] == "purge":
-                limit = None
+                limit = 0
+    if isinstance(ctx.channel, discord.TextChannel):
+        await ctx.channel.purge(limit=limit, bulk=False)
 
-    await ctx.channel.purge(limit=limit, bulk=False)
 
-
-@user.error
-async def user_error(error):
+@info.error
+async def user_error(ctx: Context[Bot], error: Exception) -> None:
     """Handle user method error"""
     if isinstance(error, commands.BadArgument):
         print(error)
 
 
 #   Basic commands (usually single response)
-@bot.command(pass_context=True)
-async def help(ctx, *args):
+@bot.command()  # type: ignore
+async def help(ctx: Context[Bot], *args: str) -> None:
     """Display command information and invocation syntax
 
     :param ctx: command invocation message context
@@ -136,10 +142,9 @@ async def help(ctx, *args):
 
     else:
         c_group = [group for _ in config["help"] for group in config["help"]]
-        just_c = [c in group for group in config["help"] for c in config["help"][group]]
+        just_c = [c for group in config["help"] for c in config["help"][group]]
+
         command = args[0].replace("!", "")
-        [[c_group.append(group) for c in config["help"][group]] for group in config["help"]]
-        [[just_c.append(c) for c in config["help"][group]] for group in config["help"]]
         if command in just_c:
             ind = just_c.index(command)
             details = config["help"][c_group[ind]][command]

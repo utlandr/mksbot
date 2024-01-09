@@ -1,11 +1,12 @@
 import praw
 import yaml
 from discord import Embed
+from praw.models import Submission
 
 from mksbot.cogs.voice.streamable import streamable_instance, upload_streamable
 
 
-def reddit_post(sub, sort_by, n_posts=100):
+def reddit_post(sub: str, sort_by: str, n_posts: int = 100) -> Submission:
     """Scrapes reddit for hot posts
 
     :param sub: subreddit name to scrape posts
@@ -22,7 +23,7 @@ def reddit_post(sub, sort_by, n_posts=100):
 
         except Exception as e:
             print("Error: {}".format(e))
-            return "r/{} not found".format(sub), None
+            raise ValueError("r/{} not found".format(sub)) from e
 
     #   Grab a list of non-hidden (unread) posts
     if sort_by == "hot":
@@ -47,7 +48,7 @@ def reddit_post(sub, sort_by, n_posts=100):
             submission.hide()
 
 
-def reddit_embed(submission):
+def reddit_embed(submission: Submission) -> tuple[Embed, str]:
     """Converts a raw submission into a pretty discord embedded message
 
     :param submission: praw.Submission object
@@ -96,7 +97,7 @@ def reddit_embed(submission):
     return embedded, tack_on
 
 
-def reddit_instance():
+def reddit_instance() -> praw.Reddit:
     """Setup the reddit connection (to bot account)
 
     :return: praw.Reddit instance
@@ -113,7 +114,7 @@ def reddit_instance():
     return reddit
 
 
-def clear_hidden(n=None):
+def clear_hidden(n: int | None = None) -> None:
     """An external function to clear all read/hidden posts on the bot account"""
     reddit = reddit_instance()
 

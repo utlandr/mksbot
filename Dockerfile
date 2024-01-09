@@ -1,4 +1,4 @@
-from python:3.11-slim-bullseye
+from python:3.12-bullseye
 
 ARG USER=appuser
 ARG GROUP=appuser

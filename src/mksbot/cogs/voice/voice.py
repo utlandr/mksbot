@@ -1,9 +1,16 @@
+from typing import Any
+
 import discord
-from discord import Message, Reaction, User
+from discord import Message, Reaction, User, VoiceClient
 from discord.ext import commands
+from discord.ext.commands import Context
+from discord.ext.commands.bot import Bot
+from discord.member import Member
+from discord.player import PCMVolumeTransformer
 
 from mksbot.cogs.voice.voice_fun import (
     YTDLSource,
+    YTVideo,
     add_queue,
     bot_audible_update,
     create_queue_embed,
@@ -15,16 +22,16 @@ from mksbot.cogs.voice.voice_fun import (
 
 
 class Music(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.def_volume = 0.05
         self.cur_volume = self.def_volume
-        self.queues = {}
-        self.players = {}
+        self.queues: dict[int, list[YTVideo]] = {}
+        self.players: dict[int, PCMVolumeTransformer[Any]] = {}
 
     #   Summon to voice channel
     @commands.command()
-    async def summon(self, ctx, *arg):
+    async def summon(self, ctx: commands.Context[Any], *arg: list[str]) -> None:
         """Joins a voice channel
 
         :param ctx: command invocation message context
@@ -34,28 +41,36 @@ class Music(commands.Cog):
 
         #   Connect to a supplied voice channel
         if len(arg) != 0:
-            channel = discord.utils.get(ctx.guild.voice_channels, name=arg[0])
+            guild = ctx.guild
+            if guild:
+                channel = discord.utils.get(guild.voice_channels, name=arg[0])
 
-            if channel is not None:
-                if ctx.voice_client is not None:
-                    await ctx.voice_client.move_to(channel)
-                    return
+                if channel is not None:
+                    if ctx.voice_client is not None:
+                        await ctx.bot.voice_clients[0].move_to(channel)
+                        return
 
-                await channel.connect()
-                await bot_audible_update(ctx, "Entering")
+                    await channel.connect()
+                    await bot_audible_update(ctx, "Entering")
 
         #   No input implies connect to users current voice channel
         else:
-            channel = ctx.author.voice.channel
-            if ctx.voice_client:
-                await ctx.voice_client.move_to(channel)
-            else:
-                await ctx.author.voice.channel.connect()
-                await bot_audible_update(ctx, "Entering")
+            author = ctx.author
+            assert isinstance(author, Member)
+            voice = author.voice
+            if voice:
+                channel_act = voice.channel
+                voice_client = ctx.bot.voice_clients[0]
+                if voice_client:
+                    await voice_client.move_to(channel_act)
+                else:
+                    if channel_act:
+                        await channel_act.connect()
+                        await bot_audible_update(ctx, "Entering")
 
     #   Leave the discord channel (also stops audio)
     @commands.command()
-    async def leave(self, ctx):
+    async def leave(self, ctx: Context[Any]) -> None:
         """Stops and disconnects the bot from voice
 
         :param ctx: command invocation message context
@@ -63,15 +78,18 @@ class Music(commands.Cog):
         """
 
         await bot_audible_update(ctx, "Leaving")
-        guild_id = ctx.message.guild.id
-        if guild_id in self.queues:
-            del self.queues.get(guild_id)[:]
+        if ctx.message.guild:
+            guild_id = ctx.message.guild.id
+            if guild_id in self.queues:
+                q = self.queues.get(guild_id, None)
+                if q:
+                    del q[:]
 
-        await ctx.voice_client.disconnect()
+            await ctx.bot.voice_clients[0].disconnect()
 
     #   Stream (no local storage) Youtube audio
     @commands.command()
-    async def stream(self, ctx, *, url):
+    async def stream(self, ctx: Context[Any], *, url: str) -> None:
         """Streams from a url (same as yt, but doesn't predownload)
 
         :param ctx: command invocation message context
@@ -80,19 +98,20 @@ class Music(commands.Cog):
         """
         async with ctx.typing():
             source = await YTDLSource.get_info(url)
+            vc = ctx.bot.voice_clients[0]
             if source.videos:
                 await add_queue(self, ctx, source)
             else:
                 await ctx.send("Media not found.")
 
-        if ctx.voice_client.is_paused() or ctx.voice_client.is_playing():
+        if vc.is_paused() or vc.is_playing():
             pass
         else:
             play_queue(self, ctx)
 
     #   Alter volume of audio
     @commands.command()
-    async def volume(self, ctx, *volume: int):
+    async def volume(self, ctx: Context[Any], *volume: int) -> Message:
         """Changes the player's volume
 
         :param ctx: command invocation message context
@@ -101,7 +120,7 @@ class Music(commands.Cog):
         """
 
         try:
-            bot_volume = int(ctx.voice_client.source.volume * 100)
+            bot_volume = int(ctx.bot.voice_clients[0].source.volume * 100)
 
         except AttributeError:
             perc_vol = self.def_volume * 100
@@ -113,156 +132,172 @@ class Music(commands.Cog):
                 if ctx.voice_client is None:
                     return await ctx.send("You are not connected to a voice channel.")
 
-                ctx.voice_client.source.volume = volume[0] / 100
+                ctx.bot.voice_clients[0].source.volume = volume[0] / 100
                 self.cur_volume = volume[0] / 100
                 return await ctx.send("Changed volume to {}%".format(int(volume[0])))
 
         return await ctx.send("Current volume is {}%".format(bot_volume))
 
     @commands.command()
-    async def flick(self, ctx):
+    async def flick(self, ctx: Context[Any]) -> None:
         """Switch between paused and playing states
 
         :param ctx: command invocation message context
         :return: None
         """
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.pause()
-        elif ctx.voice_client.is_paused():
-            ctx.voice_client.resume()
+        voice_client = ctx.bot.voice_clients[0]
+        if voice_client.is_playing():
+            voice_client.pause()
+        elif voice_client.is_paused():
+            voice_client.resume()
 
-    @classmethod
-    async def _react_flick(cls, reaction):
+    async def _react_flick(self) -> None:
         """Switch between paused and playing states
 
         :param reaction: Reaction object invoking flick action
         :return: None
         """
-        guild = reaction.message.guild
-        if guild.voice_client.is_playing():
-            guild.voice_client.pause()
-        elif guild.voice_client.is_paused():
-            guild.voice_client.resume()
+        vc = self.bot.voice_clients[0]
+        assert isinstance(vc, VoiceClient)
+        if vc:
+            if vc.is_playing():
+                vc.pause()
+            elif vc.is_paused():
+                vc.resume()
 
     #   Pause current audio stream
     @commands.command()
-    async def pause(self, ctx):
+    async def pause(self, ctx: Context[Any]) -> None:
         """Pauses current playback
 
         :param ctx: command invocation message context
         :return: None
         """
+        vc = ctx.bot.voice_clients[0]
+        assert isinstance(vc, VoiceClient)
 
-        if ctx.voice_client.is_playing():
-            ctx.voice_client.pause()
+        if vc.is_playing():
+            vc.pause()
 
     #   Resume current audio stream
     @commands.command()
-    async def resume(self, ctx):
+    async def resume(self, ctx: Context[Any]) -> None:
         """Resumes current playback if paused
 
         :param ctx: command invocation message context
         :return: None
         """
-        ctx.voice_client.resume()
+        ctx.bot.voice_clients[0].resume()
 
     #   Skip current song and play the next one
     @commands.command()
-    async def skip(self, ctx, *queue_id):
+    async def skip(self, ctx: Context[Any], *queue_id: int | str) -> None:
         """Skips current player and plays the next player in the queue
 
         :param ctx: command invocation message context
         :param queue_id: 1-based queue index to remove player
         :return:
         """
-        guild_id = ctx.message.guild.id
-        if queue_id:
-            if queue_id[0] == "all":
-                del self.queues[guild_id][:]
-                ctx.voice_client.stop()
-                await ctx.send("Queue has been emptied.")
-            elif int(queue_id[0]) and int(queue_id[0]) <= len(self.queues[guild_id]):
-                removed = self.queues[guild_id].pop(int(queue_id[0]) - 1).title
-                await ctx.send("Removed:\t{}".format(removed))
-        else:
-            player_title = self.queues[guild_id][0].title
-            await ctx.send("Skipping:\t{}".format(player_title))
-            ctx.voice_client.stop()
+        guild = ctx.message.guild
+        vc = ctx.bot.voice_channel[0]
+        if guild:
+            guild_id = guild.id
+            if queue_id:
+                if queue_id[0] == "all":
+                    del self.queues[guild_id][:]
+                    vc.stop()
+                    await ctx.send("Queue has been emptied.")
+                elif int(queue_id[0]) and int(queue_id[0]) <= len(self.queues[guild_id]):
+                    removed = self.queues[guild_id].pop(int(queue_id[0]) - 1).title
+                    await ctx.send("Removed:\t{}".format(removed))
+            else:
+                player_title = self.queues[guild_id][0].title
+                await ctx.send("Skipping:\t{}".format(player_title))
+                vc.stop()
 
-    async def _react_skip(self, reaction):
-        guild_id = reaction.message.guild.id
-        player_title = self.queues[guild_id][0].title
-        await reaction.message.channel.send("Skipping:\t{}".format(player_title))
-        reaction.message.guild.voice_client.stop()
+    async def _react_skip(self, reaction: Reaction) -> None:
+        guild = reaction.message.guild
+        if guild:
+            guild_id = guild.id
+            player_title = self.queues[guild_id][0].title
+            await reaction.message.channel.send("Skipping:\t{}".format(player_title))
+            vc = self.bot.voice_clients[0]
+            assert isinstance(vc, VoiceClient)
+            vc.stop()
 
     #   Display information about current audio being played
     @commands.command()
-    async def player(self, ctx):
+    async def player(self, ctx: Context[Any]) -> None:
         """Display information about current audio being played
 
         :param ctx: command invocation message context
         :return:
         """
-        queue = self.queues.get(ctx.message.guild.id)
-        if ctx.voice_client:
-            if queue:
+        guild = ctx.guild
+        vc = ctx.bot.voice_channels[0]
+        if guild:
+            guild_id = guild.id
+            queue = self.queues[guild_id]
+            if vc ^ queue:
                 source = queue[0]
-                status = "Paused" if ctx.voice_client.is_paused() else "Playing"
                 await setup_player(ctx, source)
 
     #   View the queue of the existing playlist
     @commands.command()
-    async def queue(self, ctx, first=5):
+    async def queue(self, ctx: Context[Any], first: int = 5) -> None:
         """
 
         :param ctx: command invocation message context
         :param first: the number of audio sources to display in the embed
         :return:
         """
-        guild_id = ctx.message.guild.id
-        queue_cp = self.queues[guild_id].copy()
+        guild = ctx.guild
+        if guild:
+            guild_id = guild.id
+            queue_cp = self.queues[guild_id].copy()
 
-        if guild_id in self.queues:
-            embed_queue = create_queue_embed(title="MksBot Player Queue")
-            queue_string = ""
-            count = 0
+            if guild_id in self.queues:
+                embed_queue = create_queue_embed(title="MksBot Player Queue")
+                queue_string = ""
+                count = 0
 
-            for aud_source in queue_cp[:first]:
-                playlist_id = count if count else "Playing"
+                for aud_source in queue_cp[:first]:
+                    playlist_id = count if count else "Playing"
 
-                if aud_source.is_live:
-                    duration = "LIVE"
+                    if aud_source.is_live:
+                        duration = "LIVE"
 
-                else:
-                    duration = format_duration(aud_source.duration)
+                    else:
+                        duration = format_duration(aud_source.duration)
 
-                queue_string += "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(
-                    playlist_id, duration, aud_source.title, aud_source.id
+                    queue_string += "{0}. {1} | [{2}](https://youtube.com/watch?v={3})\n\n".format(
+                        playlist_id, duration, aud_source.title, aud_source.id
+                    )
+                    count += 1
+
+                embed_queue.add_field(name="Total in Queue", value=len(queue_cp))
+                embed_queue.add_field(name="\u200b", value="\u200b", inline=False)
+                embed_queue.add_field(
+                    name=f"Queue (Displaying first {first})",
+                    value=queue_string,
+                    inline=False,
                 )
-                count += 1
-
-            embed_queue.add_field(name="Total in Queue", value=len(queue_cp))
-            embed_queue.add_field(name="\u200b", value="\u200b", inline=False)
-            embed_queue.add_field(
-                name=f"Queue (Displaying first {first})",
-                value=queue_string,
-                inline=False,
-            )
-            ret_msg: Message = await ctx.send(embed=embed_queue)
-            await ret_msg.delete(delay=10)
+                ret_msg: Message = await ctx.send(embed=embed_queue)
+                await ret_msg.delete(delay=10)
 
     @commands.command()
-    async def speak(self, ctx, *phrase: str):
-        """Have the bot translate a phrase into Droidspeak (activate Star Wars Nerd Mode)
+    async def speak(self, ctx: Context[Any], *phrase: str) -> None:
+        """Have the bot translate a phrase into Droidspeak
 
         :param ctx: command invocation message context
         :return: None
         """
-        if not ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
-            await droid_speak_translate(ctx, phrase)
+        vc = ctx.bot.voice_clients[0]
+        if not vc.is_playing() or vc.is_paused():
+            await droid_speak_translate(ctx, list(phrase))
 
     @staticmethod
-    def _is_not_bot(user):
+    def _is_not_bot(user: User) -> bool:
         return not user.bot
 
     @commands.Cog.listener()
@@ -289,23 +324,26 @@ class Music(commands.Cog):
                 await reaction.message.clear_reactions()
                 await reaction.message.delete(delay=10)
             elif str(reaction) == "⏯️":
-                await self._react_flick(reaction)
+                await self._react_flick()
                 await reaction.remove(user)
             else:
                 pass
 
     @stream.before_invoke
     @speak.before_invoke
-    async def ensure_voice(self, ctx):
+    async def ensure_voice(self, ctx: Context[Any]) -> None:
         """Checks made on selection command before invocation
 
         :param ctx: command invocation message context
         :return:
         """
         if ctx.voice_client is None:
+            assert isinstance(ctx.author, Member)
             if ctx.author.voice:
-                await ctx.author.voice.channel.connect()
-                await bot_audible_update(ctx, "Entering")
+                ch = ctx.author.voice.channel
+                if ch:
+                    await ch.connect()
+                    await bot_audible_update(ctx, "Entering")
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
@@ -315,14 +353,17 @@ class Music(commands.Cog):
     @resume.before_invoke
     @skip.before_invoke
     @leave.before_invoke
-    async def ensure_user_presence(self, ctx):
+    async def ensure_user_presence(self, ctx: Context[Any]) -> None:
         if ctx.voice_client is None:
+            assert isinstance(ctx.author, Member)
             if ctx.author.voice:
-                await ctx.author.voice.channel.connect()
+                ch = ctx.author.voice.channel
+                if ch:
+                    await ch.connect()
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
 
 
-def setup(bot):
-    bot.add_cog(Music(bot))
+async def setup(bot: Bot) -> None:
+    await bot.add_cog(Music(bot))
