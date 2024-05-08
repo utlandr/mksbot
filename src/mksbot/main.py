@@ -49,7 +49,7 @@ async def on_ready() -> None:
         print("\n\nNo login\n\n")
 
 
-@bot.command()  # type: ignore
+@bot.command()
 async def info(ctx: Context[Bot]) -> None:
     """Display basic information/help/details on the bot"""
     embed = discord.Embed(
@@ -69,13 +69,13 @@ async def info(ctx: Context[Bot]) -> None:
     await ctx.send(embed=embed)
 
 
-@bot.command()  # type: ignore
+@bot.command()
 async def user(ctx: Context[Bot], *, member: discord.Member) -> None:
     """Get user information"""
     await ctx.send(embed=mks.user_info_embed(member))
 
 
-@bot.command()  # type: ignore
+@bot.command()
 @commands.has_permissions(administrator=True)
 async def rm(ctx: Context[Bot], *number: int | str) -> None:
     """Remove messages one-by-one in the invoked text channel
@@ -108,7 +108,7 @@ async def user_error(ctx: Context[Bot], error: Exception) -> None:
 
 
 #   Basic commands (usually single response)
-@bot.command()  # type: ignore
+@bot.command()
 async def help(ctx: Context[Bot], *args: str) -> None:
     """Display command information and invocation syntax
 
